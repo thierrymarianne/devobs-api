@@ -21,6 +21,7 @@ services:
             redisCache:                     '@app.cache.redis'
             timelyStatusRepository:         '@repository.timely_status'
             tokenRepository:                '@weaving_the_web_api.repository.token'
+            httpAuthenticator:              '@app.security.http_authenticator'
 
     controller.logged_in_member:
         class: 'App\Member\Controller\LoggedInMemberController'
@@ -45,3 +46,12 @@ services:
             allowedOrigin:     '%allowed.origin%'
             environment:       '%kernel.environment%'
             redisCache:        '@app.cache.redis'
+
+    controller.subscription:
+        class: 'App\Aggregate\Controller\SubscriptionController'
+        properties:
+            allowedOrigin:                  '%allowed.origin%'
+            environment:                    '%kernel.environment%'
+            httpAuthenticator:              '@app.security.http_authenticator'
+            memberSubscriptionRepository:   '@repository.member_subscription'
+            redisCache:                     '@app.cache.redis'

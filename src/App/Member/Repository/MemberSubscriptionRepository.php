@@ -36,6 +36,12 @@ class MemberSubscriptionRepository extends EntityRepository
         return $memberSubscription;
     }
 
+    /**
+     * @param MemberInterface $member
+     * @param array           $subscriptions
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function findMissingSubscriptions(MemberInterface $member, array $subscriptions)
     {
         $query = <<< QUERY
@@ -74,5 +80,35 @@ QUERY;
         }
 
         return $remainingSubscriptions;
+    }
+
+    /**
+     * @param MemberInterface $member
+     * @return mixed[]
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getMemberSubscriptions(MemberInterface $member)
+    {
+        $query = <<< QUERY
+            SELECT 
+            u.usr_twitter_username as username,
+            u.usr_twitter_id as member_id,
+            u.description,
+            u.url
+            FROM member_subscription ms,
+            weaving_user u
+            WHERE member_id = :member_id 
+            AND ms.subscription_id = u.usr_id
+QUERY;
+
+        $connection = $this->getEntityManager()->getConnection();
+        $statement = $connection->executeQuery(
+            strtr(
+                $query,
+                [':member_id' => $member->getId(),]
+            )
+        );
+
+        return $statement->fetchAll();
     }
 }

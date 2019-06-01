@@ -8,6 +8,8 @@ use App\Cache\RedisCache;
 use App\Member\MemberInterface;
 use App\Member\Repository\AuthenticationTokenRepository;
 use App\Security\Cors\CorsHeadersAwareTrait;
+use App\Security\Exception\UnauthorizedRequestException;
+use App\Security\HttpAuthenticator;
 use App\Status\Repository\HighlightRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use OldSound\RabbitMqBundle\RabbitMq\Producer;
@@ -96,6 +98,11 @@ class ListController
      * @var RouterInterface
      */
     public $router;
+
+    /**
+     * @var HttpAuthenticator
+     */
+    public $httpAuthenticator;
 
     /**
      * @param Request $request
@@ -232,16 +239,10 @@ class ListController
         }
 
         $queriedRouteAccess = $searchParams->hasParam('routeName');
-        if ($queriedRouteAccess && !$request->headers->has('x-auth-admin-token')) {
-            return $unauthorizedJsonResponse;
-        }
-
         if ($queriedRouteAccess) {
-            $tokenId = $request->headers->get('x-auth-admin-token');
-            $memberProperties = $this->authenticationTokenRepository->findByTokenIdentifier($tokenId);
-
-            if (!array_key_exists('member', $memberProperties) ||
-                !($memberProperties['member'] instanceof MemberInterface)) {
+            try {
+                $this->httpAuthenticator->authenticateMember($request);
+            } catch (UnauthorizedRequestException $exception) {
                 return $unauthorizedJsonResponse;
             }
         }
