@@ -99,6 +99,8 @@ QUERY;
             weaving_user u
             WHERE member_id = :member_id 
             AND ms.subscription_id = u.usr_id
+            AND u.suspended = 0
+            AND u.not_found = 0
 QUERY;
 
         $connection = $this->getEntityManager()->getConnection();
