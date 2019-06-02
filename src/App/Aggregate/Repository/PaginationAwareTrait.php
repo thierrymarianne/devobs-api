@@ -2,7 +2,7 @@
 
 namespace App\Aggregate\Repository;
 
-use App\Aggregate\Controller\SearchParams;
+use App\Http\SearchParams;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 

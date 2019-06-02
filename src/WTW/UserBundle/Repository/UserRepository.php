@@ -2,7 +2,7 @@
 
 namespace WTW\UserBundle\Repository;
 
-use App\Aggregate\Controller\SearchParams;
+use App\Http\SearchParams;
 use App\Aggregate\Repository\PaginationAwareTrait;
 use App\Member\MemberInterface;
 use Doctrine\DBAL\Connection;

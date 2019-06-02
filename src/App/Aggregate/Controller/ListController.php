@@ -5,6 +5,7 @@ namespace App\Aggregate\Controller;
 use App\Aggregate\Controller\Exception\InvalidRequestException;
 use App\Aggregate\Repository\TimelyStatusRepository;
 use App\Cache\RedisCache;
+use App\Http\SearchParams;
 use App\Member\MemberInterface;
 use App\Member\Repository\AuthenticationTokenRepository;
 use App\RequestValidation\RequestParametersValidationTrait;

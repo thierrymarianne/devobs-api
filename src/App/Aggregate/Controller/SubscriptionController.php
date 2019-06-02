@@ -3,6 +3,7 @@
 namespace App\Aggregate\Controller;
 
 use App\Cache\RedisCache;
+use App\Http\PaginationParams;
 use App\Member\Repository\MemberSubscriptionRepository;
 use App\Security\Cors\CorsHeadersAwareTrait;
 use App\Security\Exception\UnauthorizedRequestException;
@@ -53,11 +54,11 @@ class SubscriptionController
             );
         }
 
-        $headers = $this->getAccessControlOriginHeaders($this->environment, $this->allowedOrigin);
+        $corsHeaders = $this->getAccessControlOriginHeaders($this->environment, $this->allowedOrigin);
         $unauthorizedJsonResponse = new JsonResponse(
             'Unauthorized request',
             403,
-            $headers
+            $corsHeaders
         );
 
         try {
@@ -66,8 +67,23 @@ class SubscriptionController
             return $unauthorizedJsonResponse;
         }
 
-        $memberSubscriptions = $this->memberSubscriptionRepository->getMemberSubscriptions($member);
+        $paginationParams = PaginationParams::fromRequest($request);
 
-        return new JsonResponse($memberSubscriptions);
+        $memberSubscriptions = $this->memberSubscriptionRepository->getMemberSubscriptions(
+            $member,
+            $paginationParams
+        );
+
+        return new JsonResponse(
+            $memberSubscriptions['subscriptions'],
+            200,
+            array_merge(
+                $corsHeaders,
+                [
+                    'x-total-pages' => $memberSubscriptions['total_subscriptions'],
+                    'x-page-index' => $paginationParams->pageIndex
+                ]
+            )
+        );
     }
 }

@@ -2,7 +2,7 @@
 
 namespace WeavingTheWeb\Bundle\ApiBundle\Repository;
 
-use App\Aggregate\Controller\SearchParams;
+use App\Http\SearchParams;
 use App\Aggregate\Entity\TimelyStatus;
 use App\Aggregate\Repository\PaginationAwareTrait;
 use App\Aggregate\Repository\TimelyStatusRepository;

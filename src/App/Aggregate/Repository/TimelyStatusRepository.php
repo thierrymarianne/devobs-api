@@ -2,7 +2,7 @@
 
 namespace App\Aggregate\Repository;
 
-use App\Aggregate\Controller\SearchParams;
+use App\Http\SearchParams;
 use App\Aggregate\Entity\TimelyStatus;
 use App\Conversation\ConversationAwareTrait;
 use Doctrine\ORM\EntityRepository;
@@ -129,7 +129,7 @@ class TimelyStatusRepository extends EntityRepository
      * @return TimelyStatus
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function saveTimelyStatus(TimelyStatus $timelyStatus, $doNotFlush = false)
+    public function saveTimelyStatus(TimelyStatus $timelyStatus)
     {
         $this->getEntityManager()->persist($timelyStatus);
         $this->getEntityManager()->flush();
@@ -142,7 +142,7 @@ class TimelyStatusRepository extends EntityRepository
      * @return int
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function countTotalPages($searchParams): int
+    public function countTotalPages(SearchParams $searchParams): int
     {
         return $this->howManyPages($searchParams, self::TABLE_ALIAS);
     }
