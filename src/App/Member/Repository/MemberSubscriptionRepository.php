@@ -97,6 +97,7 @@ QUERY;
             WHERE ms.member_id = :member_id
             AND ms.subscription_id = u.usr_id
             AND u.suspended = 0
+            AND u.protected = 0
             AND u.not_found = 0
 QUERY;
 
@@ -130,6 +131,7 @@ QUERY;
             AND ms.has_been_cancelled = 0
             AND ms.subscription_id = u.usr_id
             AND u.suspended = 0
+            AND u.protected = 0
             AND u.not_found = 0
             ORDER BY u.usr_twitter_username ASC
 QUERY;
