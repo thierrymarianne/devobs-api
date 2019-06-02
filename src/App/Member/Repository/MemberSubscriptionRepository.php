@@ -4,6 +4,7 @@ namespace App\Member\Repository;
 
 use App\Member\Entity\MemberSubscription;
 use App\Member\MemberInterface;
+use Doctrine\DBAL\Statement;
 use Doctrine\ORM\EntityRepository;
 use WTW\UserBundle\Repository\UserRepository;
 
@@ -30,7 +31,7 @@ class MemberSubscriptionRepository extends EntityRepository
             $memberSubscription = new MemberSubscription($member, $subscription);
         }
 
-        $this->getEntityManager()->persist($memberSubscription);
+        $this->getEntityManager()->persist($memberSubscription->markAsNotBeingCancelled());
         $this->getEntityManager()->flush();
 
         return $memberSubscription;
@@ -49,7 +50,8 @@ class MemberSubscriptionRepository extends EntityRepository
             FROM member_subscription s,
             weaving_user sm
             WHERE sm.usr_id = s.subscription_id
-            AND member_id = :member_id
+            AND member_id = :member_id1
+            AND (s.has_been_cancelled IS NULL OR s.has_been_cancelled = 0)
             AND sm.usr_twitter_id is not null
             AND sm.usr_twitter_id in (:subscription_ids)
 QUERY;
@@ -84,6 +86,33 @@ QUERY;
 
     /**
      * @param MemberInterface $member
+     * @return bool
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function cancelAllSubscriptionsFor(MemberInterface $member)
+    {
+        $query = <<< QUERY
+            UPDATE member_subscription ms, weaving_user u
+            SET has_been_cancelled = 1
+            WHERE ms.member_id = :member_id
+            AND ms.subscription_id = u.usr_id
+            AND u.suspended = 0
+            AND u.not_found = 0
+QUERY;
+
+        $connection = $this->getEntityManager()->getConnection();
+        $statement = $connection->executeQuery(
+            strtr(
+                $query,
+                [':member_id' => $member->getId()]
+            )
+        );
+
+        return $statement->closeCursor();
+    }
+
+    /**
+     * @param MemberInterface $member
      * @return mixed[]
      * @throws \Doctrine\DBAL\DBALException
      */
@@ -98,9 +127,11 @@ QUERY;
             FROM member_subscription ms,
             weaving_user u
             WHERE member_id = :member_id 
+            AND ms.has_been_cancelled = 0
             AND ms.subscription_id = u.usr_id
             AND u.suspended = 0
             AND u.not_found = 0
+            ORDER BY u.usr_twitter_username ASC
 QUERY;
 
         $connection = $this->getEntityManager()->getConnection();
