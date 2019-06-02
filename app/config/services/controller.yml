@@ -55,3 +55,12 @@ services:
             httpAuthenticator:              '@app.security.http_authenticator'
             memberSubscriptionRepository:   '@repository.member_subscription'
             redisCache:                     '@app.cache.redis'
+
+    controller.member:
+        class: 'App\Member\Controller\MemberController'
+        properties:
+            allowedOrigin:          '%allowed.origin%'
+            environment:            '%kernel.environment%'
+            httpAuthenticator:      '@app.security.http_authenticator'
+            memberProfileAccessor:  '@accessor.member_profile'
+            logger:                 '@monolog.logger.twitter_api'
