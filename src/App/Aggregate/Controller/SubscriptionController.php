@@ -4,6 +4,7 @@ namespace App\Aggregate\Controller;
 
 use App\Cache\RedisCache;
 use App\Http\PaginationParams;
+use App\Member\MemberInterface;
 use App\Member\Repository\MemberSubscriptionRepository;
 use App\Security\Cors\CorsHeadersAwareTrait;
 use App\Security\Exception\UnauthorizedRequestException;
@@ -69,10 +70,20 @@ class SubscriptionController
 
         $paginationParams = PaginationParams::fromRequest($request);
 
-        $memberSubscriptions = $this->memberSubscriptionRepository->getMemberSubscriptions(
-            $member,
-            $paginationParams
-        );
+        $client = $this->redisCache->getClient();
+        $cacheKey = $this->getCacheKey($member, $paginationParams);
+        $memberSubscriptions = $client->get($cacheKey);
+
+        if (!$memberSubscriptions) {
+            $memberSubscriptions = $this->memberSubscriptionRepository->getMemberSubscriptions(
+                $member,
+                $paginationParams
+            );
+            $memberSubscriptions = json_encode($memberSubscriptions);
+            $client->setex($cacheKey, 3600, $memberSubscriptions);
+        }
+
+        $memberSubscriptions = json_decode($memberSubscriptions, $asArray = true);
 
         return new JsonResponse(
             $memberSubscriptions['subscriptions'],
@@ -85,5 +96,15 @@ class SubscriptionController
                 ]
             )
         );
+    }
+
+    /**
+     * @param MemberInterface $member
+     * @param PaginationParams                 $paginationParams
+     * @return string
+     */
+    private function getCacheKey(MemberInterface $member, PaginationParams $paginationParams): string
+    {
+        return $member->getId() . ':' . $paginationParams->pageSize . '/' . $paginationParams->pageIndex;
     }
 }

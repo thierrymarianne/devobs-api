@@ -10,7 +10,6 @@ use App\Security\HttpAuthenticator;
 use App\Serialization\JsonEncodingAwareInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use WeavingTheWeb\Bundle\ApiBundle\Entity\Json;
 
 class MemberController
 {
