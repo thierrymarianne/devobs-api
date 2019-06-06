@@ -8,6 +8,7 @@ use App\Member\MemberInterface;
 use Doctrine\DBAL\Statement;
 use Doctrine\ORM\EntityRepository;
 use JsonSchema\Exception\JsonDecodingException;
+use WeavingTheWeb\Bundle\ApiBundle\Entity\AggregateIdentity;
 use WTW\UserBundle\Repository\UserRepository;
 
 class MemberSubscriptionRepository extends EntityRepository
@@ -115,22 +116,36 @@ QUERY;
     }
 
     /**
-     * @param MemberInterface  $member
-     * @param PaginationParams $paginationParams
+     * @param MemberInterface        $member
+     * @param PaginationParams       $paginationParams
+     * @param AggregateIdentity|null $aggregateIdentity
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getMemberSubscriptions(MemberInterface $member, PaginationParams $paginationParams): array
-    {
+    public function getMemberSubscriptions(
+        MemberInterface $member,
+        PaginationParams $paginationParams,
+        AggregateIdentity $aggregateIdentity = null
+    ): array {
         $memberSubscriptions = [];
 
         $totalPages = $this->countMemberSubscriptions($member);
         if ($totalPages) {
-            $memberSubscriptions = $this->selectMemberSubscriptions($member, $paginationParams);
+            $memberSubscriptions = $this->selectMemberSubscriptions(
+                $member,
+                $paginationParams,
+                $aggregateIdentity
+            );
         }
 
         return [
-            'subscriptions' => $memberSubscriptions,
+            'subscriptions' => [
+                'aggregates' => $this->getAggregatesRelatedToMemberSubscriptions(
+                    $member,
+                    $paginationParams
+                ),
+                'subscriptions' => $memberSubscriptions
+            ],
             'total_subscriptions' => $totalPages,
         ];
     }
@@ -163,7 +178,7 @@ QUERY;
         );
 
         $results = $statement->fetchAll();
-        if (!array_key_exists(0, $results) || !array_key_exists('count_', $results[0])) {
+        if ($this->emptyResults($results, 'count_')) {
             return 0;
         }
 
@@ -171,25 +186,18 @@ QUERY;
     }
 
     /**
-     * @param MemberInterface  $member
-     * @param PaginationParams $paginationParams
+     * @param MemberInterface        $member
+     * @param PaginationParams       $paginationParams
+     * @param AggregateIdentity|null $aggregateIdentity
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function selectMemberSubscriptions(MemberInterface $member, PaginationParams $paginationParams)
-    {
-        $queryTemplate = <<< QUERY
-            SELECT 
-            {selection}
-            {constraints}
-            GROUP BY u.usr_twitter_username
-            ORDER BY u.usr_twitter_username ASC            
-            LIMIT :offset, :page_size
-QUERY;
-        $query = strtr($queryTemplate, [
-            '{selection}' => $this->getSelection(),
-            '{constraints}' => $this->getConstraints(),
-        ]);
+    public function selectMemberSubscriptions(
+        MemberInterface $member,
+        PaginationParams $paginationParams,
+        AggregateIdentity $aggregateIdentity = null
+    ) {
+        $query = $this->queryMemberSubscriptions($aggregateIdentity);
 
         $connection = $this->getEntityManager()->getConnection();
         $statement = $connection->executeQuery(
@@ -199,6 +207,7 @@ QUERY;
                     ':member_id' => $member->getId(),
                     ':offset' => $paginationParams->getFirstItemIndex(),
                     ':page_size' => $paginationParams->pageSize,
+                    ':aggregate_id' => (string) $aggregateIdentity
                 ]
             )
         );
@@ -232,7 +241,7 @@ QUERY;
               CONCAT(
                 '{',
                 GROUP_CONCAT(
-                  CONCAT('"', a.id, '": "', a.name, '"') SEPARATOR ","
+                  CONCAT('"', a.id, '": "', a.name, '"') ORDER BY a.name DESC SEPARATOR ","
                 ), 
                 '}'
               ),
@@ -242,22 +251,142 @@ QUERY;
     }
 
     /**
+     * @param AggregateIdentity $aggregateIdentity
      * @return string
      */
-    public function getConstraints()
+    public function getConstraints(AggregateIdentity $aggregateIdentity = null)
     {
-        return <<<QUERY
-            FROM member_subscription ms,
-            weaving_user u
-            LEFT JOIN weaving_aggregate a
-            ON a.screen_name = u.usr_twitter_username
-            AND a.name NOT LIKE 'user ::%'
-            WHERE member_id = :member_id 
-            AND ms.has_been_cancelled = 0
-            AND ms.subscription_id = u.usr_id
-            AND u.suspended = 0
-            AND u.protected = 0
-            AND u.not_found = 0
+        $restrictionByAggregate = '';
+
+        if ($aggregateIdentity) {
+            $restrictionByAggregate = sprintf(<<<QUERY
+                AND a.name IN ( SELECT name FROM weaving_aggregate WHERE id = %d)
+QUERY
+            , intval((string) $aggregateIdentity));
+        }
+
+        $constraintsTemplates = implode(
+            PHP_EOL,
+            [
+                <<<QUERY
+                FROM member_subscription ms,
+                weaving_user u
+                {join} weaving_aggregate a
+                ON a.screen_name = u.usr_twitter_username
+                AND a.name NOT LIKE 'user ::%'
+                AND a.screen_name IS NOT NULL 
+                WHERE member_id = :member_id 
+                AND ms.has_been_cancelled = 0
+                AND ms.subscription_id = u.usr_id
+                AND u.suspended = 0
+                AND u.protected = 0
+                AND u.not_found = 0
+QUERY
+                ,
+                $restrictionByAggregate
+            ]
+        );
+
+        return str_replace(
+            '{join}',
+            $restrictionByAggregate ? 'INNER JOIN' : 'LEFT JOIN',
+            $constraintsTemplates
+        );
+    }
+
+    /**
+     * @param AggregateIdentity|null $aggregateIdentity
+     * @param string                 $selection
+     * @param string                 $group
+     * @param string                 $sort
+     * @return string
+     */
+    private function queryMemberSubscriptions(
+        AggregateIdentity $aggregateIdentity = null,
+        string $selection = '',
+        string $group = '',
+        string $sort = ''
+    ): string {
+        $queryTemplate = <<< QUERY
+            SELECT 
+            {selection}
+            {constraints}
+            {group}
+            LIMIT :offset, :page_size
 QUERY;
+
+        return strtr($queryTemplate, [
+            '{selection}' => $selection ?: $this->getSelection(),
+            '{constraints}' => $this->getConstraints($aggregateIdentity),
+            '{group}' => $group?: 'GROUP BY u.usr_twitter_username',
+            '{sort}' => $sort?: 'ORDER BY u.usr_twitter_username ASC'
+        ]);
+    }
+
+    /**
+     * @param array $results
+     * @param       $column
+     * @return bool
+     */
+    private function emptyResults(array $results, $column): bool
+    {
+        return !array_key_exists(0, $results) || !array_key_exists($column, $results[0]);
+    }
+
+    /**
+     * @param MemberInterface  $member
+     * @param PaginationParams $paginationParams
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    private function getAggregatesRelatedToMemberSubscriptions(
+        MemberInterface $member,
+        PaginationParams $paginationParams
+    ): array {
+        $query = sprintf(<<<QUERY
+                SELECT CONCAT(
+                    '{',
+                    GROUP_CONCAT(
+                        DISTINCT CONCAT(
+                            '"',
+                            select_.id, 
+                            '": "', 
+                            select_.name, 
+                            '"'
+                        ) SEPARATOR ', '
+                    ),
+                    '}'
+                ) as aggregates
+                FROM (%s) select_
+QUERY
+            ,
+            $this->queryMemberSubscriptions(
+                $aggregateIdentity = null,
+                'a.name, a.id'
+            )
+        );
+
+        $connection = $this->getEntityManager()->getConnection();
+        $statement = $connection->executeQuery(
+            strtr(
+                $query,
+                [
+                    ':member_id' => $member->getId(),
+                    ':offset' => $paginationParams->getFirstItemIndex(),
+                    ':page_size' => $paginationParams->pageSize,
+                ]
+            )
+        );
+        $aggregateResults = $statement->fetchAll();
+
+        $aggregates = [];
+        if (!$this->emptyResults($aggregateResults, 'aggregates')) {
+            $aggregates = json_decode(
+                $aggregateResults[0]['aggregates'],
+                $asArray = true
+            );
+        }
+
+        return $aggregates;
     }
 }

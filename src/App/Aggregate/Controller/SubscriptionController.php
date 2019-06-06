@@ -11,6 +11,7 @@ use App\Security\Exception\UnauthorizedRequestException;
 use App\Security\HttpAuthenticator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use WeavingTheWeb\Bundle\ApiBundle\Entity\AggregateIdentity;
 
 class SubscriptionController
 {
@@ -70,14 +71,20 @@ class SubscriptionController
 
         $paginationParams = PaginationParams::fromRequest($request);
 
+        $aggregateIdentity = null;
+        if ($request->get('aggregateId')) {
+            $aggregateIdentity = new AggregateIdentity(intval($request->get('aggregateId')));
+        }
+
         $client = $this->redisCache->getClient();
-        $cacheKey = $this->getCacheKey($member, $paginationParams);
+        $cacheKey = $this->getCacheKey($member, $paginationParams, $aggregateIdentity);
         $memberSubscriptions = $client->get($cacheKey);
 
         if (!$memberSubscriptions) {
             $memberSubscriptions = $this->memberSubscriptionRepository->getMemberSubscriptions(
                 $member,
-                $paginationParams
+                $paginationParams,
+                $aggregateIdentity
             );
             $memberSubscriptions = json_encode($memberSubscriptions);
             $client->setex($cacheKey, 3600, $memberSubscriptions);
@@ -99,12 +106,22 @@ class SubscriptionController
     }
 
     /**
-     * @param MemberInterface $member
-     * @param PaginationParams                 $paginationParams
+     * @param MemberInterface   $member
+     * @param PaginationParams  $paginationParams
+     * @param AggregateIdentity $aggregateIdentity
      * @return string
      */
-    private function getCacheKey(MemberInterface $member, PaginationParams $paginationParams): string
-    {
-        return $member->getId() . ':' . $paginationParams->pageSize . '/' . $paginationParams->pageIndex;
+    private function getCacheKey(
+        MemberInterface $member,
+        PaginationParams $paginationParams,
+        AggregateIdentity $aggregateIdentity = null
+    ): string {
+        return sprintf(
+            '%:%:%/%',
+            $aggregateIdentity ?: '',
+            $member->getId(),
+            $paginationParams->pageSize,
+            $paginationParams->pageIndex
+        );
     }
 }
