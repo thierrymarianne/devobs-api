@@ -117,7 +117,7 @@ class SubscriptionController
         AggregateIdentity $aggregateIdentity = null
     ): string {
         return sprintf(
-            '%:%:%/%',
+            '%s:%s:%s/%s',
             $aggregateIdentity ?: '',
             $member->getId(),
             $paginationParams->pageSize,
