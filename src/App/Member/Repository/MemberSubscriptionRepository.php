@@ -124,7 +124,7 @@ QUERY;
      */
     public function getMemberSubscriptions(
         MemberInterface $member,
-        PaginationParams $paginationParams,
+        PaginationParams $paginationParams = null,
         AggregateIdentity $aggregateIdentity = null
     ): array {
         $memberSubscriptions = [];
@@ -138,12 +138,17 @@ QUERY;
             );
         }
 
+        $aggregates = [];
+        if ($paginationParams instanceof PaginationParams) {
+            $aggregates = $this->getAggregatesRelatedToMemberSubscriptions(
+                $member,
+                $paginationParams
+            );
+        }
+
         return [
             'subscriptions' => [
-                'aggregates' => $this->getAggregatesRelatedToMemberSubscriptions(
-                    $member,
-                    $paginationParams
-                ),
+                'aggregates' => $aggregates,
                 'subscriptions' => $memberSubscriptions
             ],
             'total_subscriptions' => $totalPages,
@@ -187,26 +192,40 @@ QUERY;
 
     /**
      * @param MemberInterface        $member
-     * @param PaginationParams       $paginationParams
+     * @param PaginationParams|null  $paginationParams
      * @param AggregateIdentity|null $aggregateIdentity
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
     public function selectMemberSubscriptions(
         MemberInterface $member,
-        PaginationParams $paginationParams,
+        PaginationParams $paginationParams = null,
         AggregateIdentity $aggregateIdentity = null
     ) {
-        $query = $this->queryMemberSubscriptions($aggregateIdentity);
+        $query = $this->queryMemberSubscriptions(
+            $aggregateIdentity,
+            $paginationParams,
+            $selection = '',
+            $group = '',
+            $sort = ''
+        );
 
         $connection = $this->getEntityManager()->getConnection();
+
+        $offset = '';
+        $pageSize = '';
+        if ($paginationParams instanceof PaginationParams) {
+            $offset = $paginationParams->getFirstItemIndex();
+            $pageSize = $paginationParams->pageSize;
+        }
+
         $statement = $connection->executeQuery(
             strtr(
                 $query,
                 [
                     ':member_id' => $member->getId(),
-                    ':offset' => $paginationParams->getFirstItemIndex(),
-                    ':page_size' => $paginationParams->pageSize,
+                    ':offset' => $offset,
+                    ':page_size' => $pageSize,
                     ':aggregate_id' => (string) $aggregateIdentity
                 ]
             )
@@ -273,7 +292,6 @@ QUERY
                 weaving_user u
                 {join} weaving_aggregate a
                 ON a.screen_name = u.usr_twitter_username
-                AND a.name NOT LIKE 'user ::%'
                 AND a.screen_name IS NOT NULL 
                 WHERE member_id = :member_id 
                 AND ms.has_been_cancelled = 0
@@ -296,6 +314,7 @@ QUERY
 
     /**
      * @param AggregateIdentity|null $aggregateIdentity
+     * @param PaginationParams|null  $paginationParams
      * @param string                 $selection
      * @param string                 $group
      * @param string                 $sort
@@ -303,6 +322,7 @@ QUERY
      */
     private function queryMemberSubscriptions(
         AggregateIdentity $aggregateIdentity = null,
+        PaginationParams $paginationParams  = null,
         string $selection = '',
         string $group = '',
         string $sort = ''
@@ -312,14 +332,15 @@ QUERY
             {selection}
             {constraints}
             {group}
-            LIMIT :offset, :page_size
+            {limit}
 QUERY;
 
         return strtr($queryTemplate, [
             '{selection}' => $selection ?: $this->getSelection(),
             '{constraints}' => $this->getConstraints($aggregateIdentity),
             '{group}' => $group?: 'GROUP BY u.usr_twitter_username',
-            '{sort}' => $sort?: 'ORDER BY u.usr_twitter_username ASC'
+            '{sort}' => $sort?: 'ORDER BY u.usr_twitter_username ASC',
+            '{limit}' => $paginationParams instanceof PaginationParams ? 'LIMIT :offset, :page_size' : '',
         ]);
     }
 
@@ -362,6 +383,7 @@ QUERY
             ,
             $this->queryMemberSubscriptions(
                 $aggregateIdentity = null,
+                $paginationParams,
                 'a.name, a.id'
             )
         );

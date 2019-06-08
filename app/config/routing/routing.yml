@@ -69,3 +69,7 @@ keywords:
 subscriptions:
     path:     '/api/twitter/admin/member-subscriptions'
     defaults: { _controller: controller.subscription:getMemberSubscriptions }
+
+collect_subscription_statuses:
+    path:     '/api/twitter/admin/member-subscriptions/collect-statuses'
+    defaults: { _controller: controller.subscription:requestMemberSubscriptionStatusCollection }

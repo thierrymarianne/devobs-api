@@ -9,6 +9,7 @@ use App\Http\SearchParams;
 use App\Member\MemberInterface;
 use App\Member\Repository\AuthenticationTokenRepository;
 use App\RequestValidation\RequestParametersValidationTrait;
+use App\Security\AuthenticationTokenValidationTrait;
 use App\Security\Cors\CorsHeadersAwareTrait;
 use App\Security\Exception\UnauthorizedRequestException;
 use App\Security\HttpAuthenticator;
@@ -29,18 +30,13 @@ use Kreait\Firebase\ServiceAccount;
 
 class ListController
 {
+    use AuthenticationTokenValidationTrait;
     use CorsHeadersAwareTrait;
     use RequestParametersValidationTrait;
-
     /**
      * @var AuthenticationTokenRepository
      */
     public $authenticationTokenRepository;
-
-    /**
-     * @var TokenRepository
-     */
-    public $tokenRepository;
 
     /**
      * @var AggregateRepository
@@ -825,27 +821,6 @@ class ListController
         }
 
         return $decodedContent['params']['membersNames'];
-    }
-
-    /**
-     * @param $corsHeaders
-     * @return Token
-     * @throws NonUniqueResultException
-     */
-    private function guardAgainstInvalidAuthenticationToken($corsHeaders): Token
-    {
-        $token = $this->tokenRepository->findFirstUnfrozenToken();
-        if (!($token instanceof Token)) {
-            $exceptionMessage = 'Could not process your request at the moment';
-            $jsonResponse = new JsonResponse(
-                $exceptionMessage,
-                503,
-                $corsHeaders
-            );
-            InvalidRequestException::guardAgainstInvalidRequest($jsonResponse, $exceptionMessage);
-        }
-
-        return $token;
     }
 
     /**

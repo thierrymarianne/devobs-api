@@ -4,6 +4,7 @@ namespace WeavingTheWeb\Bundle\ApiBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
 
 /**
  * @ORM\Entity(repositoryClass="WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository")
@@ -170,4 +171,12 @@ class Aggregate
      * @ORM\ManyToMany(targetEntity="Status", mappedBy="aggregates")
      */
     protected $userStreams;
+
+    /**
+     * @return bool
+     */
+    public function isMemberAggregate()
+    {
+        return strpos($this->name, AggregateRepository::PREFIX_MEMBER_AGGREGATE) === 0;
+    }
 }

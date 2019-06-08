@@ -24,6 +24,7 @@ trait RequestParametersValidationTrait
                 422,
                 $corsHeaders
             );
+
             InvalidRequestException::guardAgainstInvalidRequest($jsonResponse, $exceptionMessage);
         }
 
@@ -45,6 +46,7 @@ trait RequestParametersValidationTrait
                 422,
                 $corsHeaders
             );
+
             InvalidRequestException::guardAgainstInvalidRequest($jsonResponse, $exceptionMessage);
         }
 
