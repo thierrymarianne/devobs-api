@@ -12,7 +12,7 @@ use WeavingTheWeb\Bundle\ApiBundle\Entity\StatusInterface;
 use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
 use WeavingTheWeb\Bundle\ApiBundle\Repository\StatusRepository;
 
-class TimelyStatusRepository extends EntityRepository
+class TimelyStatusRepository extends EntityRepository implements DuplicateRecordsAware
 {
     const TABLE_ALIAS = 't';
 
@@ -160,6 +160,7 @@ class TimelyStatusRepository extends EntityRepository
         $queryBuilder->setFirstResult($searchParams->getFirstItemIndex());
         $queryBuilder->setMaxResults($searchParams->getPageSize());
 
+        $queryBuilder->groupBy($this->getUniqueIdentifier());
         $queryBuilder->orderBy(self::TABLE_ALIAS.'.publicationDateTime', 'DESC');
 
         $results = $queryBuilder->getQuery()->getArrayResult();
@@ -220,5 +221,13 @@ class TimelyStatusRepository extends EntityRepository
             $queryBuilder->andWhere('t.memberName = :member_name');
             $queryBuilder->setParameter('member_name', $params['memberName']);
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function getUniqueIdentifier()
+    {
+        return 's.id';
     }
 }

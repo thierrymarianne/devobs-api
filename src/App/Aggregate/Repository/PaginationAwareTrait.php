@@ -22,7 +22,19 @@ trait PaginationAwareTrait
         $queryBuilder = $this->createQueryBuilder($alias);
 
         $this->applyCriteria($queryBuilder, $searchParams);
-        $queryBuilder->select('COUNT(DISTINCT '.$alias.'.id) total_items');
+
+        $uniqueIdentifier = $alias.'id';
+
+        if ($this instanceof DuplicateRecordsAware) {
+            $uniqueIdentifier = $this->getUniqueIdentifier();
+        }
+
+        $queryBuilder->select(
+            sprintf(
+                'COUNT(DISTINCT %s) total_items',
+                $uniqueIdentifier
+            )
+        );
 
         try {
             $result = $queryBuilder->getQuery()->getSingleResult();
