@@ -23,7 +23,7 @@ trait PaginationAwareTrait
 
         $this->applyCriteria($queryBuilder, $searchParams);
 
-        $uniqueIdentifier = $alias.'id';
+        $uniqueIdentifier = $alias.'.id';
 
         if ($this instanceof DuplicateRecordsAware) {
             $uniqueIdentifier = $this->getUniqueIdentifier();
