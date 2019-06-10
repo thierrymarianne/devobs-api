@@ -29,15 +29,13 @@
         <field
             name="perDayOfWeek"
             column="per_day_of_week"
-            type="string"
-            length="255"
+            type="text"
         />
 
         <field
             name="perHourOfDay"
             column="per_hour_of_day"
-            type="string"
-            length="255"
+            type="text"
         />
 
         <field
