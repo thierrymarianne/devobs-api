@@ -27,7 +27,22 @@ class PublicationFrequency
     private $perHourOfDay;
 
     /**
+     * @var string
+     */
+    private $perDayOfWeekPercentage;
+
+    /**
+     * @var string
+     */
+    private $perHourOfDayPercentage;
+
+    /**
      * @var \DateTime
      */
     private $updatedAt;
+
+    /**
+     * @var Sample
+     */
+    private $sample;
 }

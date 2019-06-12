@@ -9,7 +9,7 @@
             table="publication_frequency">
 
         <indexes>
-            <index name="publication_frequency_idx" columns="member_id,updated_at" />
+            <index name="frequency_index" columns="member_id,sample_id,updated_at" />
         </indexes>
 
         <id name="id" column="id" type="uuid">
@@ -26,6 +26,17 @@
             />
         </one-to-one>
 
+        <many-to-one
+            field="sample"
+            target-entity="App\Analysis\Entity\Sample"
+            inversed-by="publicationFrequencies"
+        >
+            <join-column
+                name="sample_id"
+                referenced-column-name="id"
+            />
+        </many-to-one>
+
         <field
             name="perDayOfWeek"
             column="per_day_of_week"
@@ -35,6 +46,18 @@
         <field
             name="perHourOfDay"
             column="per_hour_of_day"
+            type="text"
+        />
+
+        <field
+            name="perDayOfWeekPercentage"
+            column="per_day_of_week_percentage"
+            type="text"
+        />
+
+        <field
+            name="perHourOfDayPercentage"
+            column="per_hour_of_day_percentage"
             type="text"
         />
 
