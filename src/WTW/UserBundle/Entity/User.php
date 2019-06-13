@@ -5,6 +5,7 @@ namespace WTW\UserBundle\Entity;
 use App\Member\MemberInterface;
 
 use App\Serialization\JsonEncodingAwareInterface;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use WTW\UserBundle\Model\User as BaseUser;
 
@@ -436,7 +437,8 @@ class User extends BaseUser implements MemberInterface, JsonEncodingAwareInterfa
     {
         parent::__construct();
 
-        $this->tokens = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->tokens = new ArrayCollection();
+        $this->publicationFrequencies = new ArrayCollection();
     }
 
     /**
@@ -710,4 +712,14 @@ class User extends BaseUser implements MemberInterface, JsonEncodingAwareInterfa
         return !is_null($this->lastStatusPublicationDate) &&
             ($this->lastStatusPublicationDate < $oneMonthAgo);
     }
+
+    /**
+     * @var ArrayCollection
+     *
+     * @ORM\OneToMany(
+     *     targetEntity="\App\Analysis\Entity\PublicationFrequency",
+     *     mappedBy="member"
+     * )
+     */
+    private $publicationFrequencies;
 }
