@@ -13,7 +13,7 @@ use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
  *     indexes={
  *         @ORM\Index(
  *             name="name",
- *             columns={"name"}
+ *             columns={"name", "screen_name"}
  *         )
  *     }
  * )
