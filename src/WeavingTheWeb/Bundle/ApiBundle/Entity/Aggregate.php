@@ -10,6 +10,7 @@ use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
  * @ORM\Entity(repositoryClass="WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository")
  * @ORM\Table(
  *     name="weaving_aggregate",
+ *     options={"collate":"utf8mb4_general_ci", "charset":"utf8mb4"},
  *     indexes={
  *         @ORM\Index(
  *             name="name",
