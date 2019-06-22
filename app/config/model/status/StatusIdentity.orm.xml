@@ -5,11 +5,15 @@
                   xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                   http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
-    <entity name="App\Member\Entity\MemberIdentity"
-            table="member_identity">
+    <entity name="App\Status\Entity\StatusIdentity"
+            table="status_identity">
+
+        <indexes>
+            <index name="status_idx" columns="member_identity,publication_date_time,twitter_id"/>
+        </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="member_id,screen_name,twitter_id" name="unique_member"/>
+            <unique-constraint columns="twitter_id" name="twitter"/>
         </unique-constraints>
 
         <id name="id" column="id" type="uuid">
@@ -17,21 +21,16 @@
             <custom-id-generator class="Ramsey\Uuid\Doctrine\UuidGenerator"/>
         </id>
 
-        <one-to-one
-            field="member"
-            target-entity="WTW\UserBundle\Entity\User"
+        <many-to-one
+            field="memberIdentity"
+            target-entity="App\Member\Entity\MemberIdentity"
+            inversed-by="statusIdentities"
         >
             <join-column
-                name="member_id"
-                referenced-column-name="usr_id"
+                name="member_identity"
+                referenced-column-name="id"
             />
-        </one-to-one>
-
-        <one-to-many
-            field="statusIdentities"
-            target-entity="App\Status\Entity\StatusIdentity"
-            mapped-by="member_identity"
-        />
+        </many-to-one>
 
         <field
             name="twitterId"
@@ -40,12 +39,10 @@
         />
 
         <field
-            name="screenName"
-            column="screen_name"
-            type="string"
-            length="190"
+            name="publicationDateTime"
+            column="publication_date_time"
+            type="datetime"
         />
-
     </entity>
 
 </doctrine-mapping>

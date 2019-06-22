@@ -3,6 +3,8 @@
 namespace App\Member\Entity;
 
 use App\Member\MemberInterface;
+use App\Status\Entity\StatusIdentity;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class MemberIdentity
 {
@@ -25,4 +27,14 @@ class MemberIdentity
      * @var int
      */
     private $twitterId;
+
+    /**
+     * @var StatusIdentity[]
+     */
+    private $statusIdentities;
+
+    public function __construct()
+    {
+        $this->statusIdentities = new ArrayCollection();
+    }
 }
