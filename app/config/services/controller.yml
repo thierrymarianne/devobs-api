@@ -53,5 +53,18 @@ services:
             allowedOrigin:                  '%allowed.origin%'
             environment:                    '%kernel.environment%'
             httpAuthenticator:              '@app.security.http_authenticator'
+            logger:                         '@monolog.logger.membership'
+            memberRepository:               '@user_manager'
             memberSubscriptionRepository:   '@repository.member_subscription'
+            messagePublisher:               '@status_collection.message_publisher'
             redisCache:                     '@app.cache.redis'
+            tokenRepository:                '@weaving_the_web_api.repository.token'
+
+    controller.member:
+        class: 'App\Member\Controller\MemberController'
+        properties:
+            allowedOrigin:          '%allowed.origin%'
+            environment:            '%kernel.environment%'
+            httpAuthenticator:      '@app.security.http_authenticator'
+            memberProfileAccessor:  '@accessor.member_profile'
+            logger:                 '@monolog.logger.twitter_api'
