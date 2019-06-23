@@ -3,6 +3,7 @@
 namespace App\Status\Entity;
 
 use App\Member\Entity\MemberIdentity;
+use WeavingTheWeb\Bundle\ApiBundle\Entity\Status;
 
 class StatusIdentity
 {
@@ -15,6 +16,16 @@ class StatusIdentity
      * @var MemberIdentity
      */
     private $memberIdentity;
+
+    /**
+     * @var Status
+     */
+    private $status;
+
+    /**
+     * @var Status
+     */
+    private $archivedStatus;
 
     /**
      * @var string

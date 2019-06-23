@@ -32,6 +32,28 @@
             />
         </many-to-one>
 
+        <one-to-one
+            field="status"
+            target-entity="WeavingTheWeb\Bundle\ApiBundle\Entity\Status"
+            inversed-by="status_identity"
+        >
+            <join-column
+                name="status"
+                referenced-column-name="ust_id"
+            />
+        </one-to-one>
+
+        <one-to-one
+            field="archivedStatus"
+            target-entity="WeavingTheWeb\Bundle\ApiBundle\Entity\ArchivedStatus"
+            inversed-by="status_identity"
+        >
+            <join-column
+                name="archived_status"
+                referenced-column-name="ust_id"
+            />
+        </one-to-one>
+
         <field
             name="twitterId"
             column="twitter_id"
