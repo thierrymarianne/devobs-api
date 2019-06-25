@@ -28,6 +28,9 @@ remove-apache-container: ## Remove Apache container
 run-apache-container: ## Run Apache container
 		@/bin/bash -c 'source ./bin/functions.sh && run_apache'
 
+build-mysql-container: ## Build MySQL container
+		@/bin/bash -c 'source ./bin/functions.sh && build_mysql_container'
+
 run-mysql-container: ## Run MySQL container (https://hub.docker.com/_/mysql/)
 		@/bin/bash -c 'source ./bin/functions.sh && run_mysql_container'
 

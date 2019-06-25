@@ -652,6 +652,11 @@ function run_apache() {
     /bin/bash -c "${command}"
 }
 
+function build_mysql_container() {
+    cd provisioning/containers/mysql
+    docker build -t mysql .
+}
+
 function build_php_fpm_container() {
     cd provisioning/containers/php-fpm
     docker build -t php-fpm .
