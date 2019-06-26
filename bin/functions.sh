@@ -230,7 +230,7 @@ function create_database_schema {
     fi
 
     local project_dir="$(get_project_dir)"
-    echo 'php /var/www/devobs/app/console doctrine:schema:create -e '"${env}" | make run-php
+    echo 'php /var/www/devobs/app/console doctrine:schema:create -e '"${env}"' --em=admin' | make run-php
 }
 
 function create_database_test_schema {
@@ -399,6 +399,10 @@ function run_mysql_container {
     fi
 
     local gateway=`ip -f inet addr  | grep docker0 -A1 | cut -d '/' -f 1 | grep inet | sed -e 's/inet//' -e 's/\s*//g'`
+    if [ ! -z ${GATEWAY} ];
+    then
+        gateway="${GATEWAY}"
+    fi
 
     local mysql_volume_path=`pwd`"/../../volumes/mysql"
     if [ ! -z "${MYSQL_VOLUME}" ];
@@ -414,6 +418,7 @@ function run_mysql_container {
         -e MYSQL_USER=${database_user} \
         -e MYSQL_PASSWORD=${database_password} \
         -e MYSQL_ROOT_PASSWORD=${database_password} \
+        -e MYSQL_ROOT_HOST=${gateway} \
         ${configuration_volume} -v ${mysql_volume_path}:/var/lib/mysql \
         mysql:5.7 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
 
@@ -780,8 +785,9 @@ function run_php() {
     local symfony_environment="$(get_symfony_environment)"
 
     local network=`get_network_option`
+
     local command=$(echo -n 'docker run '"${network}"'\
-    -e '"${symfony_environment}"' \
+    -e '"${symfony_environment}" '\
     -v '`pwd`'/provisioning/containers/php/templates/20-no-xdebug.ini.dist:/usr/local/etc/php/conf.d/20-xdebug.ini \
     -v '`pwd`':/var/www/devobs \
     --name=php'"${suffix}"' '"${arguments}")
