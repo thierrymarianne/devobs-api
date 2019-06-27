@@ -1,5 +1,23 @@
 #!/usr/bin/env bash
 
+# 2019-06-27 - Notes
+#
+# - Ensure environment variable PROJECT_DIR has been declared
+# - Ensure the appropriate docker network has been created before considering to initialize a MySQL volume
+# - Building a PHP docker image is a requirement of the initialization of the MySQL volume
+# ```
+# # First shortcut command to be executed before running a MySQL container
+# make initialize-mysql-volume
+# ```
+# - Building RabbitMQ docker image would prevent having warning provided the project configuration
+# when initializing MySQL volume
+# - Before running a RabbitMQ container, the following commands should have been executed
+# ```
+# make run-rabbitmq-container
+# make setup-amqp-fabric
+# make configure-rabbitmq-user-privileges
+# ```
+
 function get_docker_network() {
     echo 'press-review-network'
 }
