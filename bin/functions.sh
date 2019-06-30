@@ -14,8 +14,8 @@
 # - Before running a RabbitMQ container, the following commands should have been executed
 # ```
 # make run-rabbitmq-container
-# make setup-amqp-fabric
 # make configure-rabbitmq-user-privileges
+# make setup-amqp-fabric
 # ```
 
 function get_docker_network() {
