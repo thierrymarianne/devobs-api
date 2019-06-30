@@ -248,7 +248,13 @@ function create_database_schema {
     fi
 
     local project_dir="$(get_project_dir)"
-    echo 'php /var/www/devobs/app/console doctrine:schema:create -e '"${env}"' --em=admin' | make run-php
+
+    local entity_manager_option=''
+    if [ "${env}" = 'prod' ];
+    then
+        entity_manager_option=' --em=admin'
+    fi
+    echo 'php /var/www/devobs/app/console doctrine:schema:create -e '"${env}${entity_manager_option}" | make run-php
 }
 
 function create_database_test_schema {
@@ -474,7 +480,8 @@ function run_mysql_container {
         if [ ${matching_databases} -eq 0 ];
         then
             grant_privileges && \
-            create_database_prod_like_schema
+            create_database_prod_like_schema && \
+            create_database_test_schema
         fi
     fi
 
