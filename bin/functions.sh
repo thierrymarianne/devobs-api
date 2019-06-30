@@ -211,7 +211,7 @@ function grant_privileges {
         -e 's/{database_password_test}/'"${database_password_test}"'/g' \
         >  provisioning/containers/mysql/templates/grant-privileges-to-testing-user.sql
 
-    docker exec -ti mysql mysql -uroot \
+    docker exec -ti mysql mysql \
         -e "$(cat provisioning/containers/mysql/templates/grant-privileges-to-testing-user.sql)"
 
     local database_user="$(get_param_value_from_config "database_user")"
@@ -224,7 +224,7 @@ function grant_privileges {
         -e 's/{database_password}/'"${database_password}"'/g' \
         >  provisioning/containers/mysql/templates/grant-privileges-to-user.sql
 
-    docker exec -ti mysql mysql -uroot \
+    docker exec -ti mysql mysql \
         -e "$(cat provisioning/containers/mysql/templates/grant-privileges-to-user.sql)"
 }
 
@@ -432,16 +432,21 @@ function run_mysql_container {
 
     local log_path=`pwd`"/app/logs/mysql"
 
+    local is_replication_server=''
+    if [ ! -z "${REPLICATION_SERVER}" ];
+    then
+        is_replication_server='--server-id=2 '
+    fi
+
     # @see https://hub.docker.com/_/mysql/
     command="docker run --restart=always -d -p${gateway}:3306:3306 --name mysql \
         -e MYSQL_DATABASE=${database_name} \
         -e MYSQL_USER=${database_user} \
         -e MYSQL_PASSWORD=${database_password} \
         -e MYSQL_ROOT_PASSWORD=${database_password} \
-        -e MYSQL_ROOT_HOST=${gateway} \
         -v "${log_path}":/var/mysql/log \
         ${configuration_volume} -v ${mysql_volume_path}:/var/lib/mysql \
-        mysql:5.7 --server-id=2 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
+        mysql:5.7 ${is_replication_server}--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
 
     # Restore current directory to project root dir
     cd ./../../../
@@ -451,6 +456,8 @@ function run_mysql_container {
 
     if [ "${initializing}" -eq 0 ];
     then
+        echo 'About to grant privileges and to create a database.'
+
         local last_container_id="$(docker ps -ql)"
         local last_container_logs="$(docker logs "${last_container_id}" 2>&1)"
 
@@ -472,8 +479,9 @@ function run_mysql_container {
     fi
 
     # Log the last created container on initialization
-    if [ ${initializing} -eq 1 ];
+    if [ "${initializing}" -eq 1 ];
     then
+        echo 'About to initialize MySQL container.'
 
         local last_container_id="$(docker ps -ql)"
         local last_container_logs="$(docker logs "${last_container_id}" 2>&1)"

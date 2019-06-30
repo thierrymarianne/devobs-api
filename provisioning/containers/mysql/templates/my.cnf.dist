@@ -8,7 +8,6 @@ default-character-set = utf8mb4
 no-auto-rehash
 
 [mysqld]
-skip-name-resolve
 server-id=2
 binlog_do_db            = weaving_dev
 relay-log               = /var/log/mysql/mysql-relay-bin.log
