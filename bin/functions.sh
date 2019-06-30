@@ -412,6 +412,8 @@ function run_mysql_container {
         echo 'About to mount "'"${MYSQL_VOLUME}"'" as MySQL volume'
     fi
 
+    local log_path=`pwd`"/app/logs/mysql"
+
     # @see https://hub.docker.com/_/mysql/
     command="docker run --restart=always -d -p${gateway}:3306:3306 --name mysql \
         -e MYSQL_DATABASE=${database_name} \
@@ -419,8 +421,9 @@ function run_mysql_container {
         -e MYSQL_PASSWORD=${database_password} \
         -e MYSQL_ROOT_PASSWORD=${database_password} \
         -e MYSQL_ROOT_HOST=${gateway} \
+        -v "${log_path}":/var/mysql/log \
         ${configuration_volume} -v ${mysql_volume_path}:/var/lib/mysql \
-        mysql:5.7 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
+        mysql:5.7 --server-id=2 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
 
     # Restore current directory to project root dir
     cd ./../../../
