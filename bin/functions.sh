@@ -462,8 +462,14 @@ function run_mysql_container {
 
     cd ./provisioning/containers/mysql
 
+    local configuration_file='my-master.cnf.dist'
+    if [ ! -z "${REPLICATION_SERVER}" ] && [ ! -z "${MASTER_SERVER}" ];
+    then
+        configuration_file='my-slave.cnf.dist'
+    fi
+
     local replacement_pattern='s/{password\}/'"${database_password}"'/'
-    cat ./templates/my.cnf.dist | sed -e "${replacement_pattern}" > ./templates/my.cnf
+    cat ./templates/my-master.cnf.dist | sed -e "${replacement_pattern}" > ./templates/my.cnf
 
     remove_mysql_container
 
@@ -498,6 +504,11 @@ function run_mysql_container {
     if [ ! -z "${REPLICATION_SERVER}" ];
     then
         is_replication_server='--server-id=2 '
+
+        if [ ! -z "${MASTER_SERVER}" ];
+        then
+            is_replication_server='--server-id=1 '
+        fi
     fi
 
     # @see https://hub.docker.com/_/mysql/

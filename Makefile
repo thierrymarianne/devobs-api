@@ -34,6 +34,12 @@ build-mysql-container: ## Build MySQL container
 run-mysql-container: ## Run MySQL container (https://hub.docker.com/_/mysql/)
 		@/bin/bash -c 'source ./bin/functions.sh && run_mysql_container'
 
+run-master-mysql-container: ## Run MySQL container (https://hub.docker.com/_/mysql/)
+		@/bin/bash -c 'export REPLICATION_SERVER=1 MASTER_SERVER=1 && source ./bin/functions.sh && run_mysql_container'
+
+run-slave-mysql-container: ## Run MySQL container (https://hub.docker.com/_/mysql/)
+		@/bin/bash -c 'export REPLICATION_SERVER=1 && source ./bin/functions.sh && run_mysql_container'
+
 run-mysql-client: ## Run MySQL client
 		@/bin/bash -c 'source ./bin/functions.sh && run_mysql_client'
 
