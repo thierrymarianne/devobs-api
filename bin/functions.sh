@@ -485,7 +485,7 @@ function run_mysql_container {
     cd ./provisioning/containers/mysql
 
     local configuration_file='my-master.cnf.dist'
-    if [ ! -z "${REPLICATION_SERVER}" ] && [ ! -z "${MASTER_SERVER}" ];
+    if [ ! -z "${REPLICATION_SERVER}" ] && [ -z "${MASTER_SERVER}" ];
     then
         configuration_file='my-slave.cnf.dist'
     fi
