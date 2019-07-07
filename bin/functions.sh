@@ -403,9 +403,11 @@ function run_mysql_client {
 }
 
 function remove_mysql_container {
-    if [ `docker ps -a | grep mysql | grep -c ''` -gt 0 ];
+    local container_name=`get_mysql_container_name`
+
+    if [ `docker ps -a | grep "${container_name}" | grep -c ''` -gt 0 ];
     then
-        docker rm -f `docker ps -a | grep mysql | awk '{print $1}'`
+        docker rm -f `docker ps -a | grep "${container_name}" | awk '{print $1}'`
     fi
 }
 
