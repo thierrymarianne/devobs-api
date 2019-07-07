@@ -204,6 +204,7 @@ function grant_privileges {
     local database_user_test="$(get_param_value_from_config "database_user_test")"
     local database_name_test="$(get_param_value_from_config "database_name_test")"
     local database_password_test="$(get_param_value_from_config "database_password_test")"
+    local container_name=`get_mysql_container_name`
 
     cat provisioning/containers/mysql/templates/grant-privileges-to-testing-user.sql.dist | \
         sed -e 's/{database_name_test}/'"${database_name_test}"'/g' \
@@ -211,7 +212,7 @@ function grant_privileges {
         -e 's/{database_password_test}/'"${database_password_test}"'/g' \
         >  provisioning/containers/mysql/templates/grant-privileges-to-testing-user.sql
 
-    docker exec -ti mysql mysql \
+    docker exec -ti "${container_name}" mysql \
         -e "$(cat provisioning/containers/mysql/templates/grant-privileges-to-testing-user.sql)"
 
     local database_user="$(get_param_value_from_config "database_user")"
@@ -224,7 +225,7 @@ function grant_privileges {
         -e 's/{database_password}/'"${database_password}"'/g' \
         >  provisioning/containers/mysql/templates/grant-privileges-to-user.sql
 
-    docker exec -ti mysql mysql \
+    docker exec -ti "${container_name}" mysql \
         -e "$(cat provisioning/containers/mysql/templates/grant-privileges-to-user.sql)"
 }
 
@@ -391,7 +392,6 @@ function run_mysql_client {
 
     local gateway="$(get_gateway)"
     local last_container_id="$(get_mysql_container_id)"
-    local last_container_id="$(get_mysql_container_id)"
 
     if `is_mysql_volume_initialized "${mysql_volume_path}"`;
     then
@@ -420,8 +420,22 @@ function is_mysql_volume_initialized() {
     return 1;
 }
 
+function get_mysql_container_name() {
+    local from="${1}"
+    if [ -z "${from}" ];
+    then
+        from=`pwd`
+    fi
+
+    local container_name=$(echo "${from}" | sha1sum | awk '{print $1}')
+
+    echo "mysql-${container_name}"
+}
+
 function get_mysql_container_id() {
-    echo "$(docker ps -a  | grep mysql | awk '{print $1}')"
+    local container_name=`get_mysql_container_name`
+
+    echo "$(docker ps -a  | grep "${container_name}" | awk '{print $1}')"
 }
 
 function mark_mysql_volume_as_initialized() {
@@ -444,6 +458,12 @@ function wait_until_mysql_container_is_ready() {
 
 function run_mysql_container {
     local from="${1}"
+
+    if [ -z "${from}" ];
+    then
+        from=`pwd`
+    fi
+    local container_name=`get_mysql_container_name "${from}"`
 
     if [ ! -z "${from}" ];
     then
@@ -512,7 +532,7 @@ function run_mysql_container {
     fi
 
     # @see https://hub.docker.com/_/mysql/
-    command="docker run --restart=always -d -p${gateway}:3306:3306 --name mysql \
+    command="docker run --restart=always -d -p${gateway}:3306:3306 --name "${container_name}" \
         -e MYSQL_DATABASE=${database_name} \
         -e MYSQL_USER=${database_user} \
         -e MYSQL_PASSWORD=${database_password} \
