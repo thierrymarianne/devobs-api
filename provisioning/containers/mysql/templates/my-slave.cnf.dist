@@ -18,17 +18,17 @@ binlog_do_db            = devobs
 binlog_format           = mixed
 
 port        = 3306
-socket      = /tmp/mysql_5_7.sock
+socket      = /var/run/mysqld/mysqld.sock
+
 collation-server = utf8mb4_unicode_ci
 character-set-server = utf8mb4
 init-connect='SET NAMES utf8mb4'
 ft_min_word_len=2general-log=1
 general-log-file = "/var/log/mysql.queries.log"
 group_concat_max_len=18446744073709551615
-innodb_file_per_table
-innodb_flush_method=O_DIRECT
-innodb_log_file_size=1G
-innodb_buffer_pool_size=4G
+
+
+
 skip-external-locking
 key_buffer_size = 16M
 max_allowed_packet = 1G
@@ -48,10 +48,14 @@ sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_
 max_connections                 = 300
 query_cache_type                = 0
 query_cache_size                = 0
+
 innodb_buffer_pool_size         = 7GB
 innodb_log_file_size            = 1G
 innodb_flush_log_at_trx_commit  = 2
 innodb_buffer_pool_instances    = 10
+innodb_file_per_table
+innodb_flush_method=O_DIRECT
+innodb_log_file_size=1G
 
 [mysqldump]
 quick
