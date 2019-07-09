@@ -1,4 +1,4 @@
-FROM mariadb:10.1.40
+FROM mariadb:10.2.25
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 
