@@ -476,6 +476,12 @@ function run_mysql_container {
     local database_password="$(get_param_value_from_config "database_password_admin")"
     local database_name="$(get_param_value_from_config "database_name_admin")"
     local database_user="$(get_param_value_from_config "database_user_admin")"
+    if [ ! -z "${REPLICATION_SERVER}" ] && [ -z "${MASTER_SERVER}" ];
+    then
+        database_password="$(get_param_value_from_config "database_password_read")"
+        database_name="$(get_param_value_from_config "database_name_read")"
+        database_user="$(get_param_value_from_config "database_user_read")"
+    fi
 
     echo 'Database name is "'"${database_name}"'"'
     echo 'User name is '"${database_user}*****"
