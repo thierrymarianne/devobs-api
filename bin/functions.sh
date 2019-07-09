@@ -497,7 +497,7 @@ function run_mysql_container {
     fi
 
     local replacement_pattern='s/{password\}/'"${database_password}"'/'
-    cat ./templates/my-master.cnf.dist | sed -e "${replacement_pattern}" > ./templates/my.cnf
+    cat ./templates/"${configuration_file}" | sed -e "${replacement_pattern}" > ./templates/my.cnf
 
     remove_mysql_container
 
