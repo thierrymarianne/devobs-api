@@ -15,6 +15,7 @@ log_bin                 = /var/log/mysql/mysql-bin.log
 expire_logs_days        = 10
 max_binlog_size         = 100M
 binlog_do_db            = devobs
+binlog_format           = mixed
 
 port        = 3306
 socket      = /tmp/mysql_5_7.sock

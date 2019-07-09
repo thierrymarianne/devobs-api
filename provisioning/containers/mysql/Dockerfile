@@ -1,4 +1,4 @@
-FROM mysql:5.7
+FROM mariadb:10.1.40
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 
