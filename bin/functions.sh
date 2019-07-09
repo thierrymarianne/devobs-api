@@ -431,7 +431,7 @@ function get_mysql_container_name() {
 
     local container_name=$(echo "${from}" | sha1sum | awk '{print $1}')
 
-    echo "mysql-${container_name}"
+    echo "maria-${container_name}"
 }
 
 function get_mysql_container_id() {
@@ -547,7 +547,7 @@ function run_mysql_container {
         -e MYSQL_ROOT_PASSWORD=${database_password} \
         -v "${log_path}":/var/mysql/log \
         ${configuration_volume} -v ${mysql_volume_path}:/var/lib/mysql \
-        mysql:5.7 ${is_replication_server}--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
+        db-maria ${is_replication_server}--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
 
     # Restore current directory to project root dir
     cd ./../../../
@@ -774,7 +774,7 @@ function run_apache() {
 
 function build_mysql_container() {
     cd provisioning/containers/mysql
-    docker build -t mysql .
+    docker build -t db-maria .
 }
 
 function build_php_fpm_container() {
