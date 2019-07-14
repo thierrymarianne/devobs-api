@@ -49,10 +49,10 @@ max_connections                 = 300
 query_cache_type                = 0
 query_cache_size                = 0
 
-innodb_buffer_pool_size         = 7GB
+innodb_buffer_pool_size         = 4GB
 innodb_log_file_size            = 1G
 innodb_flush_log_at_trx_commit  = 2
-innodb_buffer_pool_instances    = 10
+innodb_buffer_pool_instances    = 4
 innodb_file_per_table
 innodb_flush_method=O_DIRECT
 innodb_log_file_size=1G
