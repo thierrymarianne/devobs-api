@@ -204,6 +204,7 @@ function grant_privileges {
     local database_user_test="$(get_param_value_from_config "database_user_test")"
     local database_name_test="$(get_param_value_from_config "database_name_test")"
     local database_password_test="$(get_param_value_from_config "database_password_test")"
+    local container_name=`get_mysql_container_name`
 
     cat provisioning/containers/mysql/templates/grant-privileges-to-testing-user.sql.dist | \
         sed -e 's/{database_name_test}/'"${database_name_test}"'/g' \
@@ -211,7 +212,7 @@ function grant_privileges {
         -e 's/{database_password_test}/'"${database_password_test}"'/g' \
         >  provisioning/containers/mysql/templates/grant-privileges-to-testing-user.sql
 
-    docker exec -ti mysql mysql \
+    docker exec -ti "${container_name}" mysql \
         -e "$(cat provisioning/containers/mysql/templates/grant-privileges-to-testing-user.sql)"
 
     local database_user="$(get_param_value_from_config "database_user")"
@@ -224,7 +225,7 @@ function grant_privileges {
         -e 's/{database_password}/'"${database_password}"'/g' \
         >  provisioning/containers/mysql/templates/grant-privileges-to-user.sql
 
-    docker exec -ti mysql mysql \
+    docker exec -ti "${container_name}" mysql \
         -e "$(cat provisioning/containers/mysql/templates/grant-privileges-to-user.sql)"
 }
 
@@ -391,7 +392,6 @@ function run_mysql_client {
 
     local gateway="$(get_gateway)"
     local last_container_id="$(get_mysql_container_id)"
-    local last_container_id="$(get_mysql_container_id)"
 
     if `is_mysql_volume_initialized "${mysql_volume_path}"`;
     then
@@ -403,9 +403,11 @@ function run_mysql_client {
 }
 
 function remove_mysql_container {
-    if [ `docker ps -a | grep mysql | grep -c ''` -gt 0 ];
+    local container_name=`get_mysql_container_name`
+
+    if [ `docker ps -a | grep "${container_name}" | grep -c ''` -gt 0 ];
     then
-        docker rm -f `docker ps -a | grep mysql | awk '{print $1}'`
+        docker rm -f `docker ps -a | grep "${container_name}" | awk '{print $1}'`
     fi
 }
 
@@ -420,8 +422,22 @@ function is_mysql_volume_initialized() {
     return 1;
 }
 
+function get_mysql_container_name() {
+    local from="${1}"
+    if [ -z "${from}" ];
+    then
+        from=`pwd`
+    fi
+
+    local container_name=$(echo "${from}" | sha1sum | awk '{print $1}')
+
+    echo "maria-${container_name}"
+}
+
 function get_mysql_container_id() {
-    echo "$(docker ps -a  | grep mysql | awk '{print $1}')"
+    local container_name=`get_mysql_container_name`
+
+    echo "$(docker ps -a  | grep "${container_name}" | awk '{print $1}')"
 }
 
 function mark_mysql_volume_as_initialized() {
@@ -445,6 +461,12 @@ function wait_until_mysql_container_is_ready() {
 function run_mysql_container {
     local from="${1}"
 
+    if [ -z "${from}" ];
+    then
+        from=`pwd`
+    fi
+    local container_name=`get_mysql_container_name "${from}"`
+
     if [ ! -z "${from}" ];
     then
         echo 'About to move to "'"${from}"'"'
@@ -454,6 +476,12 @@ function run_mysql_container {
     local database_password="$(get_param_value_from_config "database_password_admin")"
     local database_name="$(get_param_value_from_config "database_name_admin")"
     local database_user="$(get_param_value_from_config "database_user_admin")"
+    if [ ! -z "${REPLICATION_SERVER}" ] && [ -z "${MASTER_SERVER}" ];
+    then
+        database_password="$(get_param_value_from_config "database_password_read")"
+        database_name="$(get_param_value_from_config "database_name_read")"
+        database_user="$(get_param_value_from_config "database_user_read")"
+    fi
 
     echo 'Database name is "'"${database_name}"'"'
     echo 'User name is '"${database_user}*****"
@@ -462,8 +490,14 @@ function run_mysql_container {
 
     cd ./provisioning/containers/mysql
 
+    local configuration_file='my-master.cnf.dist'
+    if [ ! -z "${REPLICATION_SERVER}" ] && [ -z "${MASTER_SERVER}" ];
+    then
+        configuration_file='my-slave.cnf.dist'
+    fi
+
     local replacement_pattern='s/{password\}/'"${database_password}"'/'
-    cat ./templates/my.cnf.dist | sed -e "${replacement_pattern}" > ./templates/my.cnf
+    cat ./templates/"${configuration_file}" | sed -e "${replacement_pattern}" > ./templates/my.cnf
 
     remove_mysql_container
 
@@ -498,17 +532,22 @@ function run_mysql_container {
     if [ ! -z "${REPLICATION_SERVER}" ];
     then
         is_replication_server='--server-id=2 '
+
+        if [ ! -z "${MASTER_SERVER}" ];
+        then
+            is_replication_server='--server-id=1 '
+        fi
     fi
 
     # @see https://hub.docker.com/_/mysql/
-    command="docker run --restart=always -d -p${gateway}:3306:3306 --name mysql \
+    command="docker run --restart=always -d -p${gateway}:3306:3306 --name "${container_name}" \
         -e MYSQL_DATABASE=${database_name} \
         -e MYSQL_USER=${database_user} \
         -e MYSQL_PASSWORD=${database_password} \
         -e MYSQL_ROOT_PASSWORD=${database_password} \
         -v "${log_path}":/var/mysql/log \
         ${configuration_volume} -v ${mysql_volume_path}:/var/lib/mysql \
-        mysql:5.7 ${is_replication_server}--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
+        db-maria ${is_replication_server}--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
 
     # Restore current directory to project root dir
     cd ./../../../
@@ -735,7 +774,7 @@ function run_apache() {
 
 function build_mysql_container() {
     cd provisioning/containers/mysql
-    docker build -t mysql .
+    docker build -t db-maria .
 }
 
 function build_php_fpm_container() {
