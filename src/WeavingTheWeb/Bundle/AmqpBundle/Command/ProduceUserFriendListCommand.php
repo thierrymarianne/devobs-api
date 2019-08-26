@@ -133,7 +133,7 @@ class ProduceUserFriendListCommand extends AggregateAwareCommand
                 } catch (UnavailableResourceException $exception) {
                     $this->handleUnavailableResourceException($twitterUserId, $exception);
 
-                    return $exception->getCode();
+                    continue;
                 }
             }
 
@@ -258,6 +258,8 @@ class ProduceUserFriendListCommand extends AggregateAwareCommand
      */
     private function handleUnavailableResourceException($twitterUserId, $exception): void
     {
+        $this->userRepository->declareUserAsNotFoundByUsername($exception->screenName);
+
         $unavailableResource = $this->translator->trans(
             'amqp.output.unavailable_resource',
             ['{{ user }}' => $twitterUserId],
