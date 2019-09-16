@@ -736,15 +736,15 @@ function run_apache() {
     remove_apache_container
 
     local port=80
-    if [ ! -z "${PRESS_REVIEW_APACHE_PORT}" ];
+    if [ ! -z "${DEVOBS_API_APACHE_PORT}" ];
     then
-        port="${PRESS_REVIEW_APACHE_PORT}"
+        port="${DEVOBS_API_APACHE_PORT}"
     fi
 
     host host=''
-    if [ ! -z "${PRESS_REVIEW_APACHE_HOST}" ];
+    if [ ! -z "${DEVOBS_API_APACHE_HOST}" ];
     then
-        host="${PRESS_REVIEW_APACHE_HOST}"':'
+        host="${DEVOBS_API_APACHE_HOST}"':'
     fi
 
     local symfony_environment="$(get_symfony_environment)"
@@ -784,29 +784,29 @@ function build_php_fpm_container() {
 
 function run_php_fpm() {
     local suffix=''
-    if [ ! -z "${PRESS_REVIEW_PHP_FPM_SUFFIX}" ];
+    if [ ! -z "${DEVOBS_API_PHP_FPM_SUFFIX}" ];
     then
-        suffix="-${PRESS_REVIEW_PHP_FPM_SUFFIX}"
+        suffix="-${DEVOBS_API_PHP_FPM_SUFFIX}"
     fi
 
     remove_php_fpm_container "${suffix}"
 
     local port=80
-    if [ ! -z "${PRESS_REVIEW_PHP_FPM_PORT}" ];
+    if [ ! -z "${DEVOBS_API_PHP_FPM_PORT}" ];
     then
-        port="${PRESS_REVIEW_PHP_FPM_PORT}"
+        port="${DEVOBS_API_PHP_FPM_PORT}"
     fi
 
-    host host=''
-    if [ ! -z "${PRESS_REVIEW_PHP_FPM_HOST}" ];
+    local host=''
+    if [ ! -z "${DEVOBS_API_PHP_FPM_HOST}" ];
     then
-        host="${PRESS_REVIEW_PHP_FPM_HOST}"':'
+        host="${DEVOBS_API_PHP_FPM_HOST}"':'
     fi
 
-    host mount=''
-    if [ ! -z "${PRESS_REVIEW_PHP_FPM_MOUNT}" ];
+    local mount=''
+    if [ ! -z "${DEVOBS_API_PHP_FPM_MOUNT}" ];
     then
-        mount="${PRESS_REVIEW_PHP_FPM_MOUNT}"
+        mount="${DEVOBS_API_PHP_FPM_MOUNT}"
     fi
 
     local symfony_environment="$(get_symfony_environment)"
