@@ -73,33 +73,28 @@ class SubscriptionController
     public function getMemberSubscriptions(Request $request): JsonResponse
     {
         $memberOrJsonResponse = $this->authenticateMember($request);
-
         if ($memberOrJsonResponse instanceof JsonResponse) {
             return $memberOrJsonResponse;
         }
 
-        $paginationParams = PaginationParams::fromRequest($request);
-
-        $aggregateIdentity = null;
-        if ($request->get('aggregateId')) {
-            $aggregateIdentity = new AggregateIdentity(intval($request->get('aggregateId')));
-        }
-
-        $client = $this->redisCache->getClient();
-        $cacheKey = $this->getCacheKey($memberOrJsonResponse, $paginationParams, $aggregateIdentity);
-        $memberSubscriptions = $client->get($cacheKey);
-
+        $memberSubscriptions = $this->getCachedMemberSubscriptions(
+            $request,
+            $memberOrJsonResponse
+        );
         if (!$memberSubscriptions) {
             $memberSubscriptions = $this->memberSubscriptionRepository->getMemberSubscriptions(
                 $memberOrJsonResponse,
-                $paginationParams,
-                $aggregateIdentity
+                $request
             );
             $memberSubscriptions = json_encode($memberSubscriptions);
+
+            $client = $this->redisCache->getClient();
+            $cacheKey = $this->getCacheKey($memberOrJsonResponse, $request);
             $client->setex($cacheKey, 3600, $memberSubscriptions);
         }
 
         $memberSubscriptions = json_decode($memberSubscriptions, $asArray = true);
+        $paginationParams = PaginationParams::fromRequest($request);
 
         return new JsonResponse(
             $memberSubscriptions['subscriptions'],
@@ -116,15 +111,16 @@ class SubscriptionController
 
     /**
      * @param MemberInterface   $member
-     * @param PaginationParams  $paginationParams
-     * @param AggregateIdentity $aggregateIdentity
+     * @param Request           $request
      * @return string
      */
     private function getCacheKey(
         MemberInterface $member,
-        PaginationParams $paginationParams,
-        AggregateIdentity $aggregateIdentity = null
+        Request $request
     ): string {
+        $paginationParams = PaginationParams::fromRequest($request);
+        $aggregateIdentity = AggregateIdentity::fromRequest($request);
+
         return sprintf(
             '%s:%s:%s/%s',
             $aggregateIdentity ?: '',
@@ -198,5 +194,41 @@ class SubscriptionController
         } catch (UnauthorizedRequestException $exception) {
             return $unauthorizedJsonResponse;
         }
+    }
+
+    /**
+     * @param Request $request
+     */
+    private function willCacheResponse(Request $request): bool
+    {
+        $willCacheResponse = true;
+        if ($request->headers->has('x-no-cache') &&
+            $request->headers->get('x-no-cache')) {
+            $willCacheResponse = ! boolval($request->headers->get('x-no-cache'));
+        }
+
+        return $willCacheResponse;
+    }
+
+    /**
+     * @param Request                $request
+     * @param                        $memberOrJsonResponse
+     * @return string
+     */
+    private function getCachedMemberSubscriptions(
+        Request $request,
+        $memberOrJsonResponse
+    ): string {
+        $memberSubscriptions = '';
+        if ($this->willCacheResponse($request)) {
+            $client = $this->redisCache->getClient();
+            $cacheKey = $this->getCacheKey($memberOrJsonResponse, $request);
+            $memberSubscriptions = $client->get($cacheKey);
+            if (is_null($memberSubscriptions)) {
+                $memberSubscriptions = '';
+            }
+        }
+
+        return $memberSubscriptions;
     }
 }

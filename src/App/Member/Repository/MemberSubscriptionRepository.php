@@ -8,6 +8,7 @@ use App\Member\MemberInterface;
 use Doctrine\DBAL\Statement;
 use Doctrine\ORM\EntityRepository;
 use JsonSchema\Exception\JsonDecodingException;
+use Symfony\Component\HttpFoundation\Request;
 use WeavingTheWeb\Bundle\ApiBundle\Entity\AggregateIdentity;
 use WTW\UserBundle\Repository\UserRepository;
 
@@ -116,18 +117,23 @@ QUERY;
     }
 
     /**
-     * @param MemberInterface        $member
-     * @param PaginationParams       $paginationParams
-     * @param AggregateIdentity|null $aggregateIdentity
+     * @param MemberInterface $member
+     * @param Request         $request
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
     public function getMemberSubscriptions(
         MemberInterface $member,
-        PaginationParams $paginationParams = null,
-        AggregateIdentity $aggregateIdentity = null
+        Request $request = null
     ): array {
         $memberSubscriptions = [];
+
+        $paginationParams = null;
+        $aggregateIdentity = null;
+        if ($request instanceof Request) {
+            $paginationParams = PaginationParams::fromRequest($request);
+            $aggregateIdentity = AggregateIdentity::fromRequest($request);
+        }
 
         $totalPages = $this->countMemberSubscriptions($member);
         if ($totalPages) {
