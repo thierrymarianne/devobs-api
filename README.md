@@ -122,6 +122,14 @@ app/console add-members-to-aggregate -e prod \
 --list="name-of-source-list"
 ```
 
+Import the network of subscriptions / subscribees of a Twitter member 
+
+```
+export $USERNAME='__FILL_ME__'
+app/console.php import-network -e prod \
+--member-name=$USERNAME
+```
+
 ## Testing
 
 Create the test database schema
