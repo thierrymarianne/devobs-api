@@ -19,7 +19,7 @@
 # ```
 
 function get_docker_network() {
-    echo 'press-review-network'
+    echo 'devobs'
 }
 
 function create_network() {
