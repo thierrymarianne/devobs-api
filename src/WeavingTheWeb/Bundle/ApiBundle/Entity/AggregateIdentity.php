@@ -25,7 +25,7 @@ final class AggregateIdentity
      * @param Request $request
      * @return AggregateIdentity|null
      */
-    public function fromRequest(Request $request): ?AggregateIdentity
+    public static function fromRequest(Request $request): ?AggregateIdentity
     {
         $aggregateIdentity = null;
         if ($request->get('aggregateId')) {
