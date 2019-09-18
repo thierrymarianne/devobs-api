@@ -14,6 +14,9 @@ use WTW\UserBundle\Repository\UserRepository;
 
 class MemberSubscriptionRepository extends EntityRepository
 {
+    const SORT_BY_ASCENDING_MEMBER_ID = 'ORDER BY u.usr_id ASC';
+    const SORT_BY_DESCENDING_MEMBER_ID = 'ORDER BY u.usr_id DESC';
+
     /**
      * @var UserRepository
      */
@@ -135,8 +138,8 @@ QUERY;
             $aggregateIdentity = AggregateIdentity::fromRequest($request);
         }
 
-        $totalPages = $this->countMemberSubscriptions($member);
-        if ($totalPages) {
+        $totalSubscriptions = $this->countMemberSubscriptions($member);
+        if ($totalSubscriptions) {
             $memberSubscriptions = $this->selectMemberSubscriptions(
                 $member,
                 $paginationParams,
@@ -157,7 +160,7 @@ QUERY;
                 'aggregates' => $aggregates,
                 'subscriptions' => $memberSubscriptions
             ],
-            'total_subscriptions' => $totalPages,
+            'total_subscriptions' => $totalSubscriptions,
         ];
     }
 
@@ -208,12 +211,12 @@ QUERY;
         PaginationParams $paginationParams = null,
         AggregateIdentity $aggregateIdentity = null
     ) {
-        $query = $this->queryMemberSubscriptions(
+        $queryTemplate = $this->queryMemberSubscriptions(
             $aggregateIdentity,
             $paginationParams,
             $selection = '',
             $group = '',
-            $sort = ''
+            $sort = self::SORT_BY_DESCENDING_MEMBER_ID
         );
 
         $connection = $this->getEntityManager()->getConnection();
@@ -225,17 +228,16 @@ QUERY;
             $pageSize = $paginationParams->pageSize;
         }
 
-        $statement = $connection->executeQuery(
-            strtr(
-                $query,
-                [
-                    ':member_id' => $member->getId(),
-                    ':offset' => $offset,
-                    ':page_size' => $pageSize,
-                    ':aggregate_id' => (string) $aggregateIdentity
-                ]
-            )
+        $query = strtr(
+            $queryTemplate,
+            [
+                ':member_id' => $member->getId(),
+                ':offset' => $offset,
+                ':page_size' => $pageSize,
+                ':aggregate_id' => (string) $aggregateIdentity
+            ]
         );
+        $statement = $connection->executeQuery($query);
 
         $results = $statement->fetchAll();
         if (!array_key_exists(0, $results)) {
@@ -338,6 +340,7 @@ QUERY
             {selection}
             {constraints}
             {group}
+            {sort}
             {limit}
 QUERY;
 
@@ -345,7 +348,7 @@ QUERY;
             '{selection}' => $selection ?: $this->getSelection(),
             '{constraints}' => $this->getConstraints($aggregateIdentity),
             '{group}' => $group?: 'GROUP BY u.usr_twitter_username',
-            '{sort}' => $sort?: 'ORDER BY u.usr_twitter_username ASC',
+            '{sort}' => $sort?: self::SORT_BY_ASCENDING_MEMBER_ID,
             '{limit}' => $paginationParams instanceof PaginationParams ? 'LIMIT :offset, :page_size' : '',
         ]);
     }
