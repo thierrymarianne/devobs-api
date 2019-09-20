@@ -122,6 +122,17 @@ app/console add-members-to-aggregate -e prod \
 --list="name-of-source-list"
 ```
 
+Search statuses with regards to a given topic
+
+```
+export $USERNAME='__FILL_ME__'
+export $TOPIC='__FILL_ME__'
+app/console wtw:amqp:tw:prd:lm \
+--screen_name=$USERNAME \
+--query_restriction=$TOPIC \
+--env=dev
+```
+
 Import the network of subscriptions / subscribees of a Twitter member 
 
 ```

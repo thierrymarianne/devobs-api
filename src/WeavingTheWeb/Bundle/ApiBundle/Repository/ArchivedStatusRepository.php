@@ -967,9 +967,14 @@ QUERY
 
         $this->flushStatuses($entityManager);
 
+        $screenName = null;
+        if (count($extracts) > 0) {
+            $screenName = $extracts[0]['screen_name'];
+        }
+
         return [
             'extracts' => $extracts,
-            'screen_name' => $extract['screen_name'],
+            'screen_name' => $screenName,
             'statuses' => $statuses
         ];
     }
