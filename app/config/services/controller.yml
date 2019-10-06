@@ -60,6 +60,15 @@ services:
             redisCache:                     '@app.cache.redis'
             tokenRepository:                '@weaving_the_web_api.repository.token'
 
+    controller.healthcheck:
+        class: 'App\Healthcheck\Controller\HealthcheckController'
+        properties:
+            allowedOrigin:                  '%allowed.origin%'
+            environment:                    '%kernel.environment%'
+            httpAuthenticator:              '@app.security.http_authenticator'
+            logger:                         '@monolog.logger.membership'
+            redisCache:                     '@app.cache.redis'
+
     controller.member:
         class: 'App\Member\Controller\MemberController'
         properties:

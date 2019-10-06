@@ -4,26 +4,13 @@ namespace App\Member\Entity;
 
 trait ExceptionalUserInterfaceTrait
 {
+    private $exception;
+
     /**
      * Removes sensitive data from the user.
      */
     public function eraseCredentials()
     {
-    }
-
-    /**
-     * @return string
-     */
-    public function getUrl(): ?string {
-        return '';
-    }
-
-    /**
-     * @return string
-     */
-    public function getSalt()
-    {
-        return '';
     }
 
     /**
@@ -42,5 +29,31 @@ trait ExceptionalUserInterfaceTrait
     public function getRoles()
     {
         return [];
+    }
+
+    /**
+     * @return string
+     */
+    public function getSalt()
+    {
+        return '';
+    }
+
+    /**
+     * @return string
+     */
+    public function getUrl(): ?string
+    {
+        return '';
+    }
+
+    /**
+     * @param \Exception $exception
+     *
+     * @return \Exception
+     */
+    public function setException(\Exception $exception)
+    {
+        return $this->exception = $exception;
     }
 }

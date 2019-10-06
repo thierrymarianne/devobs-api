@@ -10,9 +10,6 @@ use Symfony\Component\Security\Http\Firewall\BasicAuthenticationListener as Auth
     Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 
 /**
- * Class BasicAuthenticationListener
- *
- * @package WTW\DashboardBundle\EventListener
  * @author Thierry Marianne <thierry.marianne@weaving-the-web.org>
  */
 class BasicAuthenticationListener extends AuthenticationListener

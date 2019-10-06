@@ -73,3 +73,7 @@ subscriptions:
 collect_subscription_statuses:
     path:     '/api/twitter/admin/member-subscriptions/collect-statuses'
     defaults: { _controller: controller.subscription:requestMemberSubscriptionStatusCollection }
+
+healthcheck:
+    path:     '/api/healthcheck'
+    defaults: { _controller: controller.healthcheck:areServicesHealthy }

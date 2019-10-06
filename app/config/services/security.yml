@@ -3,6 +3,7 @@ services:
         class:              'App\Security\TokenAuthenticator'
         properties:
             userRepository: '@user_manager'
+            logger:         '@monolog.logger.healthcheck'
 
     app.auth0_token_authenticator:
         class:              'App\Security\Auth0TokenAuthenticator'

@@ -2,7 +2,10 @@
 
 namespace App\Security;
 
+use App\Member\Entity\ExceptionalMember;
 use App\Member\MemberInterface;
+use Doctrine\DBAL\Exception\ConnectionException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +23,11 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      * @var UserRepository
      */
     public $userRepository;
+
+    /**
+     * @var LoggerInterface
+     */
+    public $logger;
 
     /**
      * @param Request $request
@@ -55,8 +63,16 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
             return null;
         }
 
-        /** @var $member User */
-        $member = $userProvider->loadUserByUsername($apiKey);
+        try {
+            /** @var $member User */
+            $member = $userProvider->loadUserByUsername($apiKey);
+        } catch (ConnectionException $exception) {
+            $member = new ExceptionalMember();
+            $member->setException($exception);
+            $this->logger->emergency($exception->getMessage());
+
+            return $member;
+        }
 
         if ($member instanceof MemberInterface) {
             return $member;

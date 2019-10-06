@@ -8,6 +8,7 @@ parameters:
 monolog:
     channels:
         - 'development'
+        - 'healthcheck'
         - 'membership'
         - 'status'
         - 'twitter_api'
