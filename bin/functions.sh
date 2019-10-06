@@ -640,6 +640,19 @@ function run_rabbitmq_container {
     /bin/bash -c "${command}"
 }
 
+function does_container_exist() {
+  local name
+  name="${1}"
+
+  if [ "$(docker images -a | grep "${name}" -c)" -gt 0 ];
+  then
+    echo 1
+    return
+  fi
+
+  echo 0;
+}
+
 function build_php_container() {
     cd provisioning/containers/php
     docker build -t php .
@@ -733,6 +746,11 @@ function get_apache_container_interactive_shell() {
 }
 
 function run_apache() {
+    if [ "$(does_container_exist "apache")" == 0 ];
+    then
+      build_apache_container
+    fi
+
     remove_apache_container
 
     local port=80
