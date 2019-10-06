@@ -859,7 +859,7 @@ function run_php_fpm() {
 -d -p '${host}''${port}':9000 \
 -e '"${symfony_environment}"' '"${extensions_volume}"' \
 -v '`pwd`'/provisioning/containers/php-fpm/templates/20-no-xdebug.ini.dist:/usr/local/etc/php/conf.d/20-xdebug.ini \
--v '`pwd`'/provisioning/containers/php-fpm/templates/press-review.conf:/usr/local/etc/php-fpm.d/www.conf \
+-v '`pwd`'/provisioning/containers/php-fpm/templates/devobs.conf:/usr/local/etc/php-fpm.d/www.conf \
 -v '`pwd`'/provisioning/containers/php-fpm/templates/docker.conf:/usr/local/etc/php-fpm.d/docker.conf \
 -v '`pwd`'/provisioning/containers/php-fpm/templates/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf \
 -v '`pwd`'/provisioning/containers/apache/templates/blackfire/zz-blackfire.ini:/usr/local/etc/php/conf.d/zz-blackfire.ini \
