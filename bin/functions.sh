@@ -610,6 +610,9 @@ function remove_rabbitmq_container {
 }
 
 function run_rabbitmq_container {
+    local directory_before_running_container
+    directory_before_running_container="$(pwd)"
+
     local rabbitmq_vhost="$(cat <(cat app/config/parameters.yml | grep -v '#' | grep 'rabbitmq_vhost:' | cut -f 2 -d ':' | sed -e 's/[[:space:]]//g'))"
     local rabbitmq_password="cat ../../../app/config/parameters.yml | grep -v '#' | grep 'rabbitmq_password:' | cut -f 2 -d ':' | sed -e 's/[[:space:]]//g'"
     local rabbitmq_user=$(cat <(cat app/config/parameters.yml | \
