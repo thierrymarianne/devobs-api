@@ -630,8 +630,8 @@ function run_rabbitmq_container {
     command="docker run -d -p"${gateway}":5672:5672 \
     --name rabbitmq \
     --restart=always \
-    --hostname rabbitmq ${network}\
-    -e RABBITMQ_DEFAULT_USER=${rabbitmq_user} \
+    --hostname rabbitmq "${network}" \
+    -e RABBITMQ_DEFAULT_USER="${rabbitmq_user}" \
     -e RABBITMQ_DEFAULT_PASS='""$(cat <(/bin/bash -c "${rabbitmq_password}"))""' \
     -e RABBITMQ_DEFAULT_VHOST="${rabbitmq_vhost}" \
     -v `pwd`/../../volumes/rabbitmq:/var/lib/rabbitmq \
@@ -721,10 +721,11 @@ function list_amqp_queues() {
     docker exec -ti rabbitmq watch -n1 'rabbitmqctl list_queues -p '"${rabbitmq_vhost}"
 }
 
-function setup_amqp_queue() {
+function setup_amqp_queues() {
     local project_dir="$(get_project_dir)"
-    echo 'php '"${project_dir}"'/app/console rabbitmq:setup-fabric' | make run-php
+    echo "php "${project_dir}"/app/console rabbitmq:setup-fabric" | make run-php
 }
+
 function list_php_extensions() {
     remove_php_container
 
