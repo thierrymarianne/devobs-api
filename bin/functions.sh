@@ -230,8 +230,9 @@ function grant_privileges {
 }
 
 function get_project_dir {
-    local project_dir=''
+    local project_dir
 
+    project_dir=`pwd`
     if [ ! -z "${PROJECT_DIR}" ];
     then
         project_dir="${PROJECT_DIR}"
