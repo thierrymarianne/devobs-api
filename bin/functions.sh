@@ -640,6 +640,19 @@ function run_rabbitmq_container {
     /bin/bash -c "${command}"
 }
 
+function does_network_exist() {
+  local network_name
+  network_name="$(get_docker_network)"
+
+  if [ "$(docker network ls | grep "${network_name}" -c)" -gt 0 ];
+  then
+    echo 1
+    return
+  fi
+
+  echo 0;
+}
+
 function does_container_exist() {
   local name
   name="${1}"
@@ -749,6 +762,11 @@ function run_apache() {
     if [ "$(does_container_exist "apache")" == 0 ];
     then
       build_apache_container
+    fi
+
+    if [ "$(does_network_exist)" == 0 ];
+    then
+      create_network
     fi
 
     remove_apache_container
