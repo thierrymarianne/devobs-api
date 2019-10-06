@@ -346,7 +346,12 @@ function set_acl {
     setfacl -dR -m u:'"${owner}"':rwX -m u:1000:rwX "'${project_dir}'"/app/var &&
     setfacl -R -m u:'"${owner}"':rwX -m u:1000:rwX "'${project_dir}'"/app/var &&
     chown -R 1000:'"${owner}"' "'${project_dir}'/app" &&
-    chmod -R 0775 "'${project_dir}'/app"'
+    chmod -R 0775 "'${project_dir}'/app" &&
+    # This is me giving up on permissions
+    chmod -R 0775 "'${project_dir}'/app/logs" &&
+    chmod -R 0775 "'${project_dir}'/app/cache" &&
+    chmod -R 0775 "'${project_dir}'/app/var" &&
+    echo "Revised ACL"'
     docker exec -d apache /bin/bash -c "${command}"
 }
 
