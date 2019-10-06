@@ -21,7 +21,13 @@ $request->setTrustedHeaderName(Request::HEADER_CLIENT_PROTO, 'X-Proxy-Proto');
 $request->setTrustedHeaderName(Request::HEADER_CLIENT_IP, 'X-Proxy-For');
 $request->setTrustedHeaderName(Request::HEADER_CLIENT_HOST, 'X-Proxy-Host');
 
-$response = $kernel->handle($request);
+try {
+    $response = $kernel->handle($request);
+} catch (\Exception $exception) {
+    // Errors will be visible in server logs in case of logs having wrong permissions
+    error_log($exception->getMessage());
+}
+
 $response->send();
 
 $kernel->terminate($request, $response);
