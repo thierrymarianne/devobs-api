@@ -777,7 +777,7 @@ function run_apache() {
         port="${DEVOBS_API_APACHE_PORT}"
     fi
 
-    host host=''
+    local host='127.0.0.1'
     if [ ! -z "${DEVOBS_API_APACHE_HOST}" ];
     then
         host="${DEVOBS_API_APACHE_HOST}"':'
