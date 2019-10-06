@@ -370,7 +370,28 @@ function migrate_schema {
     echo 'php '"${project_dir}"'/app/console doc:mig:mig --em=admin' | make run-php
 }
 
+function is_rabbitmq_not_ready {
+  if [ "$(docker logs rabbitmq | grep -c 'startup complete')" -eq 0 ];
+  then
+    echo 0
+    return 1
+  fi
+
+  echo 1
+}
+
 function install_php_dependencies {
+    # Ensure dependency is available
+    # to prevent failure when caching configuration parameters
+    run_rabbitmq_container
+
+    # Wait for RabbitMQ startup to be complete
+    while [ `is_rabbitmq_not_ready` -eq 0 ];
+    do
+        sleep 1
+        echo 'Waiting for RabbitMQ to be ready...'
+    done
+
     local project_dir="$(get_project_dir)"
     local command=$(echo -n 'php /bin/bash -c "cd '"${project_dir}"' &&
     source '"${project_dir}"'/bin/install-composer.sh &&

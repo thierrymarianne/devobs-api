@@ -15,6 +15,7 @@ function install_composer() {
     php composer-setup.php
     RESULT=$?
     rm composer-setup.php
+
     return $RESULT
 }
 
