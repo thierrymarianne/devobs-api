@@ -304,6 +304,25 @@ function diff_schema {
     /bin/bash -c "export PROJECT_DIR=`pwd`; echo 'php /var/www/devobs/app/console doc:mig:diff -vvvv' | make run-php"
 }
 
+# Attempt to follow ACL instructions from
+# https://symfony.com/doc/3.4/setup/file_permissions.html#using-acl-on-a-system-that-supports-setfacl-linux-bsd
+function set_acl {
+    local command
+    command="apt install -y acl &&
+    cd /var/www/devobs &&
+    ! test -d ./app/cache && mkdir -p ./app/cache || echo 'cache dir exists'
+    ! test -d ./app/logs && mkdir -p ./app/logs || echo 'logs dir exists'
+    ! test -d ./app/var && mkdir -p ./app/var || echo 'var dir exists'
+    setfacl -dR -m u:jenkins:rwX -m u:1000:rwX /var/www/devobs/app/cache &&
+    setfacl -R -m u:jenkins:rwX -m u:1000:rwX /var/www/devobs/app/cache &&
+    setfacl -dR -m u:jenkins:rwX -m u:1000:rwX /var/www/devobs/app/logs &&
+    setfacl -R -m u:jenkins:rwX -m u:1000:rwX /var/www/devobs/app/logs &&
+    setfacl -dR -m u:jenkins:rwX -m u:1000:rwX /var/www/devobs/app/var &&
+    setfacl -R -m u:jenkins:rwX -m u:1000:rwX /var/www/devobs/app/var &&
+    chmod -R 0775 /var/www/devobs"
+    docker run apache /bin/bash -c "${command}"
+}
+
 # In production, export the *appropriate* environment variable (contains "_accepted_") to migrate a schema
 # No export of variable environment is provided here or in the Makefile documentation to prevent bad mistakes
 # from happening

@@ -94,6 +94,9 @@ configure-rabbitmq-user-privileges: ## Configure RabbitMQ user privileges
 setup-amqp-queues: ## Set up AMQP fabric (create expected queue)
 		@/bin/bash -c 'source ./bin/functions.sh && setup_amqp_queues'
 
+set-acl:
+		@/bin/bash -c 'source ./bin/functions.sh && set_acl'
+
 list-amqp-messages: ## List AMQP messags
 		@/bin/bash -c 'source ./bin/functions.sh && list_amqp_queues'
 
