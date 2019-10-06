@@ -620,7 +620,7 @@ function run_rabbitmq_container {
     echo 'RabbitMQ password is "'"${rabbitmq_password}"'"'
     echo 'RabbitMQ vhost is "'"${rabbitmq_vhost}"'"'
 
-    cd ./provisioning/containers/rabbitmq
+    cd ./provisioning/containers/rabbitmq || exit
 
     remove_rabbitmq_container
 
@@ -639,6 +639,8 @@ function run_rabbitmq_container {
     echo "${command}"
 
     /bin/bash -c "${command}"
+
+    cd "${directory_before_running_container}" || exit
 }
 
 function does_network_exist() {
