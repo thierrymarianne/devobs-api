@@ -37,8 +37,32 @@
 # make setup-amqp-fabric
 # ```
 
+function get_application_prefix() {
+    echo 'devobs-api'
+}
+
 function get_docker_network() {
-    echo 'devobs'
+    echo 'devobs-api'
+}
+
+function get_container_name_for() {
+    local target
+    target="${1}"
+
+    local application_prefix
+    application_prefix="$(get_application_prefix)-"
+
+    echo "${application_prefix}${target}"
+}
+
+function get_image_name_for() {
+    local target
+    target="${1}"
+
+    local application_prefix
+    application_prefix="$(get_application_prefix)-"
+
+    echo "${application_prefix}${target}"
 }
 
 function create_network() {
@@ -57,8 +81,11 @@ function get_network_option() {
 }
 
 function kill_existing_consumers {
-    local pids=(`ps ux | grep "rabbitmq:consumer" | grep -v '/bash' | grep -v grep | cut -d ' ' -f 2-3`)
-    local totalProcesses=`ps ux | grep "rabbitmq:consumer" | grep -v grep | grep -c ''`
+    local pids
+    pids="$(ps ux | grep "rabbitmq:consumer" | grep -v '/bash' | grep -v grep | cut -d ' ' -f 2-3)"
+
+    local totalProcesses
+    totalProcesses="$(ps ux | grep "rabbitmq:consumer" | grep -v grep | grep -c '')"
 
     if [ ! -z "${DOCKER_MODE}" ];
     then
@@ -80,12 +107,21 @@ function kill_existing_consumers {
 
     echo 'The maximum processes to be kept alive is '"${MAX_PROCESSES}"
 
+    local application_prefix
+    application_prefix="$(get_application_prefix)-"
+
     if [ ! -z ${DOCKER_MODE} ];
     then
-        totalProcesses="$(docker ps -a | grep php | grep -c '')"
+        totalProcesses="$(docker ps -a | grep "${application_prefix}"php | grep -c '')"
     fi
 
-    if [ `expr 0 + "${totalProcesses}"` -le `expr 0 + "${MAX_PROCESSES}"` ];
+    local total_processes
+    total_processes=$(expr 0 + "${totalProcesses}")
+
+    local max_processes
+    max_processes=$(expr 0 + "${MAX_PROCESSES}")
+
+    if [ "${total_processes}" -le "${max_processes}" ];
     then
         return
     fi
@@ -352,7 +388,7 @@ function set_acl {
     chmod -R 0775 "'${project_dir}'/app/cache" &&
     chmod -R 0775 "'${project_dir}'/app/var" &&
     echo "Revised ACL"'
-    docker exec -d apache /bin/bash -c "${command}"
+    docker exec -d "$(get_container_name_for "apache")" /bin/bash -c "${command}"
 }
 
 # In production, export the *appropriate* environment variable (contains "_accepted_") to migrate a schema
@@ -672,13 +708,73 @@ function initialize_mysql_volume {
     run_mysql_container # Will clean up INIT global var
 }
 
+function does_network_exist() {
+    local network_name
+    network_name="$(get_docker_network)"
+
+    if [ "$(docker network ls | grep "${network_name}" -c)" -gt 0 ];
+    then
+        echo 1
+        return
+    fi
+
+    echo 0;
+}
+
+function does_container_exist() {
+    local name
+    name="${1}"
+
+    if [ "$(docker images -a | grep "${name}" -c)" -gt 0 ];
+    then
+        echo 1
+        return
+    fi
+
+    echo 0;
+}
+
+function build_php_container() {
+    cd provisioning/containers/php
+    docker build -t "$(get_image_name_for "php")" .
+}
+
+function remove_exited_containers() {
+    /bin/bash -c "docker ps -a | grep Exited | awk ""'"'{print $1}'"'"" | xargs docker rm -f >> /dev/null 2>&1"
+}
+
+function remove_php_container() {
+    local namespace=''
+    if [ ! -z  "${NAMESPACE}" ];
+    then
+        namespace=' | grep '"'""${NAMESPACE}""'"
+    fi
+
+    remove_exited_containers
+
+    local running_containers_matching_namespace='docker ps -a | grep hours | grep '"$(get_container_name_for "php")"'-'"${namespace}"
+
+    local running_containers=`/bin/bash -c "${running_containers_matching_namespace} | grep -c ''"`
+    if [ "${running_containers}" -eq 0 ];
+    then
+        echo 'No more PHP container to be removed'
+
+        return
+    fi
+
+    command="${running_containers_matching_namespace} | awk '{print "'$1'"}' | xargs docker rm -f >> /dev/null 2>&1"
+    echo '=> About to execute command "'"${command}"'"'
+
+    /bin/bash -c "${command}" || echo 'No more container to be removed'
+}
+
 function remove_rabbitmq_container {
-    if [ `docker ps -a | grep rabbitmq -c` -eq 0 ]
+    if [ `docker ps -a | grep "$(get_container_name_for "rabbitmq")" -c` -eq 0 ]
     then
         return;
     fi
 
-    docker ps -a | grep rabbitmq | awk '{print $1}' | xargs docker rm -f
+    docker ps -a | grep "$(get_container_name_for "rabbitmq")" | awk '{print $1}' | xargs docker rm -f
 }
 
 function run_rabbitmq_container {
@@ -702,80 +798,20 @@ function run_rabbitmq_container {
     local gateway=`ifconfig | grep docker0 -A1 | tail -n1 | awk '{print $2}' | sed -e 's/addr://'`
 
     local network=`get_network_option`
-    command="docker run -d -p"${gateway}":5672:5672 \
-    --name rabbitmq \
+    command='docker run -d -p'"${gateway}"':5672:5672 \
+    --name '"$(get_container_name_for "rabbitmq")"' \
     --restart=always \
-    --hostname rabbitmq "${network}" \
-    -e RABBITMQ_DEFAULT_USER="${rabbitmq_user}" \
-    -e RABBITMQ_DEFAULT_PASS='""$(cat <(/bin/bash -c "${rabbitmq_password}"))""' \
-    -e RABBITMQ_DEFAULT_VHOST="${rabbitmq_vhost}" \
+    --hostname rabbitmq '"${network}"' \
+    -e RABBITMQ_DEFAULT_USER='"${rabbitmq_user}"' \
+    -e RABBITMQ_DEFAULT_PASS='"$(cat <(/bin/bash -c "${rabbitmq_password}"))"' \
+    -e RABBITMQ_DEFAULT_VHOST='"${rabbitmq_vhost}"' \
     -v `pwd`/../../volumes/rabbitmq:/var/lib/rabbitmq \
-    rabbitmq:3.7-management"
+    rabbitmq:3.7-management'
     echo "${command}"
 
     /bin/bash -c "${command}"
 
     cd "${directory_before_running_container}" || exit
-}
-
-function does_network_exist() {
-  local network_name
-  network_name="$(get_docker_network)"
-
-  if [ "$(docker network ls | grep "${network_name}" -c)" -gt 0 ];
-  then
-    echo 1
-    return
-  fi
-
-  echo 0;
-}
-
-function does_container_exist() {
-  local name
-  name="${1}"
-
-  if [ "$(docker images -a | grep "${name}" -c)" -gt 0 ];
-  then
-    echo 1
-    return
-  fi
-
-  echo 0;
-}
-
-function build_php_container() {
-    cd provisioning/containers/php
-    docker build -t php .
-}
-
-function remove_exited_containers() {
-    /bin/bash -c "docker ps -a | grep Exited | awk ""'"'{print $1}'"'"" | xargs docker rm -f >> /dev/null 2>&1"
-}
-
-function remove_php_container() {
-    local namespace=''
-    if [ ! -z  "${NAMESPACE}" ];
-    then
-        namespace=' | grep '"'""${NAMESPACE}""'"
-    fi
-
-    remove_exited_containers
-
-    local running_containers_matching_namespace="docker ps -a | grep hours | grep php-""${namespace}"
-
-    local running_containers=`/bin/bash -c "${running_containers_matching_namespace} | grep -c ''"`
-    if [ "${running_containers}" -eq 0 ];
-    then
-        echo 'No more PHP container to be removed'
-
-        return
-    fi
-
-    command="${running_containers_matching_namespace} | awk '{print "'$1'"}' | xargs docker rm -f >> /dev/null 2>&1"
-    echo '=> About to execute command "'"${command}"'"'
-
-    /bin/bash -c "${command}" || echo 'No more container to be removed'
 }
 
 function configure_rabbitmq_user_privileges() {
@@ -785,15 +821,15 @@ function configure_rabbitmq_user_privileges() {
         cut -f 2 -d ':' | sed -e 's/[[:space:]]//g'))
     local rabbitmq_password="cat app/config/parameters.yml | grep -v '#' | grep 'rabbitmq_password:' | cut -f 2 -d ':' | sed -e 's/[[:space:]]//g'"
 
-    docker exec -ti rabbitmq /bin/bash -c 'rabbitmqctl add_vhost '"${rabbitmq_vhost}"
-    docker exec -ti rabbitmq /bin/bash -c 'rabbitmqctl add_user '"${rabbitmq_user}"' '"'""$(cat <(/bin/bash -c "${rabbitmq_password}"))""'"
-    docker exec -ti rabbitmq /bin/bash -c 'rabbitmqctl set_user_tags '"${rabbitmq_user}"' administrator'
-    docker exec -ti rabbitmq /bin/bash -c 'rabbitmqctl set_permissions -p '"${rabbitmq_vhost}"' '"${rabbitmq_user}"' ".*" ".*" ".*"'
+    docker exec -ti "$(get_container_name_for "rabbitmq")" /bin/bash -c 'rabbitmqctl add_vhost '"${rabbitmq_vhost}"
+    docker exec -ti "$(get_container_name_for "rabbitmq")" /bin/bash -c 'rabbitmqctl add_user '"${rabbitmq_user}"' '"'""$(cat <(/bin/bash -c "${rabbitmq_password}"))""'"
+    docker exec -ti "$(get_container_name_for "rabbitmq")" /bin/bash -c 'rabbitmqctl set_user_tags '"${rabbitmq_user}"' administrator'
+    docker exec -ti "$(get_container_name_for "rabbitmq")" /bin/bash -c 'rabbitmqctl set_permissions -p '"${rabbitmq_vhost}"' '"${rabbitmq_user}"' ".*" ".*" ".*"'
 }
 
 function list_amqp_queues() {
     local rabbitmq_vhost="$(cat <(cat app/config/parameters.yml | grep -v '#' | grep 'rabbitmq_vhost:' | cut -f 2 -d ':' | sed -e 's/[[:space:]]//g'))"
-    docker exec -ti rabbitmq watch -n1 'rabbitmqctl list_queues -p '"${rabbitmq_vhost}"
+    docker exec -ti "$(get_container_name_for "rabbitmq")" watch -n1 'rabbitmqctl list_queues -p '"${rabbitmq_vhost}"
 }
 
 function setup_amqp_queues() {
@@ -806,39 +842,39 @@ function list_php_extensions() {
 
     local extensions=`pwd`"/provisioning/containers/php/templates/extensions.ini.dist";
     local volume="-v ${extensions}:/usr/local/etc/php/conf.d/extensions.ini"
-    local command="docker run ${volume} --name php php -m"
+    local command='docker run '"${volume}"' --name '"$(get_container_name_for "php")"' '"$(get_image_name_for "php")"' -m'
     echo "${command}"
     /bin/bash -c "${command}"
 }
 
 function set_permissions_in_apache_container() {
     local project_dir="$(get_project_dir)"
-    sudo rm -rf "${project_dir}"/app/cache
-    sudo mkdir "${project_dir}"/app/cache
+    sudo rm -rf "${project_dir}/app/cache"
+    sudo mkdir "${project_dir}/app/cache"
     sudo chown -R www-data "${project_dir}"/app/logs "${project_dir}"/app/var
-    docker exec -ti apache php app/console cache:clear -e prod --no-warmup
+    docker exec -ti "$(get_image_name_for "apache")" php app/console cache:clear -e prod --no-warmup
 }
 
 function build_apache_container() {
     cd provisioning/containers/apache
-    docker build -t apache .
+    docker build -t "$(get_image_name_for "apache")" .
 }
 
 function remove_apache_container {
-    if [ `docker ps -a | grep apache -c` -eq 0 ]
+    if [ `docker ps -a | grep "$(get_image_name_for "apache")" -c` -eq 0 ]
     then
         return;
     fi
 
-    docker ps -a | grep apache | awk '{print $1}' | xargs docker rm -f
+    docker ps -a | grep "$(get_image_name_for "apache")" | awk '{print $1}' | xargs docker rm -f
 }
 
 function get_apache_container_interactive_shell() {
-    docker exec -ti apache bash
+    docker exec -ti "$(get_image_name_for "apache")" bash
 }
 
 function run_apache() {
-    if [ "$(does_container_exist "apache")" == 0 ];
+    if [ "$(does_container_exist $(get_image_name_for "apache"))" == 0 ];
     then
       build_apache_container
     fi
@@ -879,7 +915,8 @@ function run_apache() {
 -v '`pwd`'/provisioning/containers/apache/templates/blackfire/.blackfire.ini:/root/.blackfire.ini \
 -v '`pwd`'/provisioning/containers/apache/templates/blackfire/agent:/etc/blackfire/agent \
 -v '`pwd`':/var/www/devobs \
---name=apache apache /bin/bash -c "cd /tasks && source setup-virtual-host.sh && tail -f /dev/null"'
+--name='"$(get_image_name_for "apache")"' '"$(get_container_name_for "apache")"' \
+/bin/bash -c "cd /tasks && source setup-virtual-host.sh && tail -f /dev/null"'
 )
 
     echo 'About to execute "'"${command}"'"'
@@ -894,7 +931,7 @@ function build_mysql_container() {
 
 function build_php_fpm_container() {
     cd provisioning/containers/php-fpm
-    docker build -t php-fpm .
+    docker build -t "$(get_image_name_for "php-fpm")" .
 }
 
 function run_php_fpm() {
@@ -942,7 +979,7 @@ function run_php_fpm() {
 -v '`pwd`'/provisioning/containers/apache/templates/blackfire/.blackfire.ini:/root/.blackfire.ini \
 -v '`pwd`'/provisioning/containers/apache/templates/blackfire/agent:/etc/blackfire/agent '"${mount}"' \
 -v '`pwd`':/var/www/devobs \
---name=php-fpm'"${suffix}"' php-fpm php-fpm'
+--name='"$(get_container_name_for "php-fpm")${suffix}"' php-fpm php-fpm'
 )
 
     echo 'About to execute "'"${command}"'"'
@@ -953,12 +990,12 @@ function run_php_fpm() {
 function remove_php_fpm_container {
     local suffix="${1}"
 
-    if [ `docker ps -a | grep fpm"${suffix}" -c` -eq 0 ]
+    if [ `docker ps -a | grep "$(get_container_name_for "php-fpm")${suffix}" -c` -eq 0 ]
     then
         return;
     fi
 
-    docker ps -a | grep fpm"${suffix}" | awk '{print $1}' | xargs docker rm -f
+    docker ps -a | grep "$(get_container_name_for "php-fpm")${suffix}" | awk '{print $1}' | xargs docker rm -f
 }
 
 function run_php_script() {
@@ -993,7 +1030,8 @@ function run_php_script() {
     -e '"${symfony_environment}"' \
     -v '`pwd`'/provisioning/containers/php/templates/20-no-xdebug.ini.dist:/usr/local/etc/php/conf.d/20-xdebug.ini \
     -v '`pwd`':/var/www/devobs \
-    --name=php'"${suffix}"' php'"${memory}"' /var/www/devobs/'"${script}")
+    --name='"$(get_container_name_for "php")${suffix}"' \
+    '"$(get_image_name_for "php")${memory}"' /var/www/devobs/'"${script}")
 
     echo 'About to execute "'"${command}"'"'
 
@@ -1019,7 +1057,7 @@ function run_php() {
     -e '"${symfony_environment}" '\
     -v '`pwd`'/provisioning/containers/php/templates/20-no-xdebug.ini.dist:/usr/local/etc/php/conf.d/20-xdebug.ini \
     -v '`pwd`':/var/www/devobs \
-    --name=php'"${suffix}"' '"${arguments}")
+    --name='"$(get_container_name_for "php")${suffix}"' '"${arguments}")
 
     echo 'About to execute '"${command}"
 
@@ -1283,9 +1321,9 @@ function run_php_unit_tests() {
 }
 
 function remove_redis_container {
-    if [ `docker ps -a | grep redis | grep -c ''` -gt 0 ];
+    if [ `docker ps -a | grep "$(get_container_name_for "redis")" | grep -c ''` -gt 0 ];
     then
-        docker rm -f `docker ps -a | grep redis | awk '{print $1}'`
+        docker rm -f `docker ps -a | grep "$(get_container_name_for "redis")" | awk '{print $1}'`
     fi
 }
 
@@ -1294,11 +1332,11 @@ function run_redis_container() {
 
     local redis_volume_path=`pwd`'/provisioning/volumes/redis'
     local network=`get_network_option`
-    local command="docker run --name redis -d \
-    --hostname reddis ${network} \
-    -v ${redis_volume_path}:/data \
-    redis redis-server \
-    --appendonly yes "
+    local command='docker run --name '"$(get_container_name_for "redis")"' -d \
+    --hostname reddis '"${network}"' \
+    -v '"${redis_volume_path}"':/data \
+    '"$(get_image_name_for "redis")"' redis-server \
+    --appendonly yes'
 
     /bin/bash -c "${command}"
 }
