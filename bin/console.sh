@@ -1335,7 +1335,7 @@ function run_redis_container() {
     local command='docker run --name '"$(get_container_name_for "redis")"' -d \
     --hostname reddis '"${network}"' \
     -v '"${redis_volume_path}"':/data \
-    '"$(get_image_name_for "redis")"' redis-server \
+    redis redis-server \
     --appendonly yes'
 
     /bin/bash -c "${command}"
