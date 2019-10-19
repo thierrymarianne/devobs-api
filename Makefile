@@ -58,6 +58,9 @@ list-php-extensions: ## List PHP extensions
 remove-php-container: ## Remove PHP container
 		@/bin/bash -c 'source ./bin/console.sh && remove_php_container'
 
+clear-backend-application-cache: ## Clear backend application (API) cache
+		@/bin/bash -c 'source ./bin/console.sh && clear_backend_application_cache'
+
 run-php-script: ## Run PHP script
 		@/bin/bash -c 'source ./bin/console.sh && run_php_script ${1}'
 

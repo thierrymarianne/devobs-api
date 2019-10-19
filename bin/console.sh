@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# 2019-10-19 - Notes about clearing application cache
+#
+# ```
+# make clear-backend-application-cache
+# ```
+#
 # 2019-10-06 - Notes about running Apache container
 #
 # ```
@@ -465,6 +471,14 @@ function is_rabbitmq_not_ready {
   fi
 
   echo 1
+}
+
+function clear_backend_application_cache() {
+  local project_dir
+  project_dir='/var/www/devobs'
+
+  echo 'php '"${project_dir}"'/app/console cache:clear -e dev --no-warmup' | make run-php
+  echo 'php '"${project_dir}"'/app/console cache:clear -e prod --no-warmup' | make run-php
 }
 
 function install_php_dependencies {
