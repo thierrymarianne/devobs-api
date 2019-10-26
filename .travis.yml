@@ -5,9 +5,12 @@ sudo: false
 language: php
 php:
     - '7.3'
+addons:
+    apt:
+        packages:
+            - rabbitmq-server
 services:
     - mysql
-    - rabbitmq
     - redis-server
 before_install:
     - mysql -e 'CREATE DATABASE test;'
