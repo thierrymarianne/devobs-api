@@ -2,13 +2,15 @@
 
 namespace WeavingTheWeb\Bundle\ApiBundle\DataFixtures\ORM;
 
+use App\Aggregate\Entity\MemberAggregateSubscription;
 use App\Aggregate\Entity\TimelyStatus;
-use Doctrine\Common\DataFixtures\FixtureInterface,
-    Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Common\DataFixtures\AbstractFixture;
+use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
+use Doctrine\Common\Persistence\ObjectManager;
 use WeavingTheWeb\Bundle\ApiBundle\Entity\Aggregate;
 use WeavingTheWeb\Bundle\ApiBundle\Entity\Status;
 
-class StatusData implements FixtureInterface
+class StatusData extends AbstractFixture implements OrderedFixtureInterface
 {
     /**
      * {@inheritDoc}
@@ -40,11 +42,26 @@ class StatusData implements FixtureInterface
         );
         $userStatusCollection = unserialize($serializedEntitiesWhichHaveBeenMoved);
 
+        $member = $this->getReference('user');
+
+        $listName = 'press';
+        $memberAggregateSubscription = new MemberAggregateSubscription(
+            $member,
+            [
+            'name' => $listName,
+            'id' => 1,
+            ]
+        );
+        $manager->persist($memberAggregateSubscription);
+        $manager->flush();
+
         $aggregate = new Aggregate(
             'thierrymarianne',
-            'press'
+            $listName
         );
+
         $manager->persist($aggregate);
+        $manager->flush();
 
         $timelyStatus = new TimelyStatus(
             $userStatus,
@@ -83,5 +100,10 @@ class StatusData implements FixtureInterface
         $status->setUpdatedAt(new \DateTime());
 
         return $status;
+    }
+
+    public function getOrder()
+    {
+        return 400;
     }
 }

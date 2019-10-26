@@ -9,19 +9,17 @@ use Doctrine\Common\DataFixtures\AbstractFixture,
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-use WeavingTheWeb\Bundle\UserBundle\Entity\RoleInterface;
-
 use WTW\UserBundle\Tests\Security\Core\User\User;
 
 class UserData extends AbstractFixture implements OrderedFixtureInterface,  ContainerAwareInterface
 {
     /**
-     * @var \Doctrine\Common\Persistence\ObjectManager $manager
+     * @var ObjectManager $manager
      */
     private $manager;
 
     /**
-     * @var \Symfony\Component\DependencyInjection\ContainerInterface $container
+     * @var ContainerInterface $container
      */
     private $container;
 

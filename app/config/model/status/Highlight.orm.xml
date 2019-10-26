@@ -43,16 +43,6 @@
             <join-column name="aggregate_id" />
         </many-to-one>
 
-        <many-to-one
-                target-entity="App\Aggregate\Entity\MemberAggregateSubscription"
-                field="aggregateSubscription"
-                inversed-by="listName">
-            <join-column
-                name="aggregate_name"
-                referenced-column-name="list_name"
-            />
-        </many-to-one>
-
         <field
             name="publicationDateTime"
             column="publication_date_time"
