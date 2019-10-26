@@ -2,6 +2,7 @@
 
 namespace App\Status\Entity;
 
+use App\Aggregate\Entity\MemberAggregateSubscription;
 use App\Member\MemberInterface;
 use Predis\Configuration\Option\Aggregate;
 use WeavingTheWeb\Bundle\ApiBundle\Entity\StatusInterface;
@@ -34,6 +35,11 @@ class Highlight
      * @var Aggregate
      */
     private $aggregate;
+
+    /**
+     * @var MemberAggregateSubscription
+     */
+    private $aggregateSubscription;
 
     /**
      * @var string

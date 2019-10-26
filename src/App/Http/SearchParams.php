@@ -164,12 +164,14 @@ class SearchParams
 
     /**
      * @param string $name
-     * @param        $value
+     * @param array  $options
+     *
      * @return bool
      */
-    public function paramIs(string $name, $value): bool
+    public function paramBelongsTo(string $name, array $options): bool
     {
-        return $this->hasParam($name) && $this->params[$name] === $value;
+        return $this->hasParam($name) &&
+            in_array($this->params[$name], array_values($options), true);
     }
 
     /**

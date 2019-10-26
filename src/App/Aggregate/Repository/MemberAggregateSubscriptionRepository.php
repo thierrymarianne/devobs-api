@@ -8,6 +8,8 @@ use Doctrine\ORM\EntityRepository;
 
 class MemberAggregateSubscriptionRepository extends EntityRepository
 {
+    const TABLE_ALIAS = 'member_aggregate_subscription';
+
     /**
      * @param MemberInterface $member
      * @param array           $list

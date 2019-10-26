@@ -3,6 +3,7 @@
 namespace App\Aggregate\Entity;
 
 use App\Member\MemberInterface;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class MemberAggregateSubscription
 {
@@ -38,6 +39,11 @@ class MemberAggregateSubscription
      * @var string
      */
     private $document;
+
+    /**
+     * @var ArrayCollection
+     */
+    private $aggregates;
 
     /**
      * @param MemberInterface $member

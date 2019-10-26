@@ -4,7 +4,9 @@ namespace WeavingTheWeb\Bundle\ApiBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
+use App\Aggregate\Entity\MemberAggregateSubscription;
 
 /**
  * @ORM\Entity(repositoryClass="WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository")
@@ -156,8 +158,10 @@ class Aggregate
     }
 
     /**
-     * @param $screenName
-     * @param $listName
+     * @param string $screenName
+     * @param string $listName
+     *
+     * @throws Exception
      */
     public function __construct(string $screenName, string $listName)
     {
@@ -180,4 +184,10 @@ class Aggregate
     {
         return strpos($this->name, AggregateRepository::PREFIX_MEMBER_AGGREGATE) === 0;
     }
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Aggregate\Entity\MemberAggregateSubscription")
+     * @ORM\JoinColumn(name="name", referencedColumnName="list_name")
+     */
+    private $memberAggregateSubscription;
 }

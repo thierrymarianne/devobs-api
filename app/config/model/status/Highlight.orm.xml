@@ -30,7 +30,27 @@
         <many-to-one
             field="member"
             target-entity="WTW\UserBundle\Entity\User">
-            <join-column name="member_id" referenced-column-name="usr_id" />
+            <join-column
+                name="member_id"
+                referenced-column-name="usr_id"
+            />
+        </many-to-one>
+
+        <many-to-one
+                target-entity="WeavingTheWeb\Bundle\ApiBundle\Entity\Aggregate"
+                field="aggregate"
+                inversed-by="timelyStatuses">
+            <join-column name="aggregate_id" />
+        </many-to-one>
+
+        <many-to-one
+                target-entity="App\Aggregate\Entity\MemberAggregateSubscription"
+                field="aggregateSubscription"
+                inversed-by="listName">
+            <join-column
+                name="aggregate_name"
+                referenced-column-name="list_name"
+            />
         </many-to-one>
 
         <field
@@ -44,13 +64,6 @@
             column="is_retweet"
             type="boolean"
         />
-
-        <many-to-one
-            target-entity="WeavingTheWeb\Bundle\ApiBundle\Entity\Aggregate"
-            field="aggregate"
-            inversed-by="timelyStatuses">
-            <join-column name="aggregate_id" />
-        </many-to-one>
 
         <field
             name="aggregateName"

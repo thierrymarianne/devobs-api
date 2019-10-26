@@ -209,6 +209,7 @@ class ListController
             },
             [
                 'aggregate' => 'string',
+                'aggregateIds' => 'array',
                 'endDate' => 'datetime',
                 'includeRetweets' => 'bool',
                 'routeName' => 'string',

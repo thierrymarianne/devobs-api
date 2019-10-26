@@ -2,6 +2,7 @@
 
 namespace App\Status\Repository;
 
+use App\Aggregate\Repository\MemberAggregateSubscriptionRepository;
 use App\Http\SearchParams;
 use App\Aggregate\Repository\PaginationAwareTrait;
 use App\Conversation\ConversationAwareTrait;
@@ -11,6 +12,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
+use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
 
 class HighlightRepository extends EntityRepository implements PaginationAwareRepositoryInterface
 {
@@ -23,7 +25,7 @@ class HighlightRepository extends EntityRepository implements PaginationAwareRep
     public $aggregate;
 
     /**
-     * @var string
+     * @var array
      */
     public $adminRouteName;
 
@@ -110,10 +112,11 @@ class HighlightRepository extends EntityRepository implements PaginationAwareRep
 
         $this->applyConstraintAboutPopularity($queryBuilder, $searchParams);
         $this->applyConstraintAboutPublicationDateTime($queryBuilder, $searchParams)
-        ->applyConstraintAboutPublicationDateOfRetweetedStatus($queryBuilder, $searchParams)
-        ->applyConstraintAboutRetweetedStatus($queryBuilder, $searchParams)
-        ->applyConstraintAboutRelatedAggregate($queryBuilder, $searchParams)
-        ->applyConstraintAboutSelectedAggregates($queryBuilder, $searchParams);
+            ->applyConstraintAboutPublicationDateOfRetweetedStatus($queryBuilder, $searchParams)
+            ->applyConstraintAboutRetweetedStatus($queryBuilder, $searchParams)
+            ->applyConstraintAboutRelatedAggregate($queryBuilder, $searchParams)
+            ->applyConstraintAboutEnclosingAggregate($queryBuilder, $searchParams)
+            ->applyConstraintAboutSelectedAggregates($queryBuilder, $searchParams);
 
         if ($searchParams->hasParam('term')) {
             $this->applyConstraintAboutTerm($queryBuilder, $searchParams);
@@ -123,6 +126,44 @@ class HighlightRepository extends EntityRepository implements PaginationAwareRep
         if ($this->overMoreThanADay($searchParams)) {
             $queryBuilder->setParameter('endDate', $searchParams->getParams()['endDate']);
         }
+    }
+
+    /**
+     * @param QueryBuilder $queryBuilder
+     * @param SearchParams $searchParams
+     *
+     * @return $this
+     */
+    private function applyConstraintAboutEnclosingAggregate(
+        QueryBuilder $queryBuilder,
+        SearchParams $searchParams
+    ): self {
+        if ($searchParams->hasParam('aggregateIds') &&
+            count($searchParams->getParams()['aggregateIds']) > 0
+        ) {
+            $queryBuilder->innerJoin(
+                self::TABLE_ALIAS.'.aggregate',
+                AggregateRepository::TABLE_ALIAS
+            );
+
+            $queryBuilder->innerJoin(
+                AggregateRepository::TABLE_ALIAS.'.memberAggregateSubscription',
+                MemberAggregateSubscriptionRepository::TABLE_ALIAS,
+                Join::WITH,
+                implode([
+                    MemberAggregateSubscriptionRepository::TABLE_ALIAS,
+                    '.',
+                    'id in (:aggregate_ids)'
+                ])
+            );
+
+            $queryBuilder->setParameter(
+                'aggregate_ids',
+                $searchParams->getParams()['aggregateIds']
+            );
+        }
+
+        return $this;
     }
 
     /**
@@ -239,7 +280,10 @@ class HighlightRepository extends EntityRepository implements PaginationAwareRep
      */
     private function accessingAdministrativeRoute(SearchParams $searchParams): bool
     {
-        return $searchParams->paramIs('routeName', $this->adminRouteName);
+        return $searchParams->paramBelongsTo(
+            'routeName',
+            $this->adminRouteName
+        );
     }
 
     /**
