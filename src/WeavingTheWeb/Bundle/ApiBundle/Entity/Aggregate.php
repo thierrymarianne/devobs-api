@@ -185,7 +185,7 @@ class Aggregate
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Aggregate\Entity\MemberAggregateSubscription")
+     * @ORM\ManyToOne(targetEntity="App\Aggregate\Entity\MemberAggregateSubscription")
      * @ORM\JoinColumn(name="name", referencedColumnName="list_name")
      */
     private $memberAggregateSubscription;

@@ -37,11 +37,6 @@ class Highlight
     private $aggregate;
 
     /**
-     * @var MemberAggregateSubscription
-     */
-    private $aggregateSubscription;
-
-    /**
      * @var string
      */
     private $aggregateName;
