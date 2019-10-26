@@ -36,6 +36,14 @@ class MemberAggregateSubscription
     private $listName;
 
     /**
+     * @return string
+     */
+    public function getListName(): string
+    {
+        return $this->listName;
+    }
+
+    /**
      * @var string
      */
     private $document;

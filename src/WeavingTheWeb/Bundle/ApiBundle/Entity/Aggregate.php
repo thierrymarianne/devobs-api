@@ -2,9 +2,11 @@
 
 namespace WeavingTheWeb\Bundle\ApiBundle\Entity;
 
+use App\Aggregate\Entity\MemberAggregateSubscription;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use InvalidArgumentException;
 use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
 
 /**
@@ -20,14 +22,14 @@ use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
  *     }
  * )
  */
-class Aggregate
+class Aggregate implements MemberSubscriptionInterface
 {
     /**
      * @var integer
      *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $id;
 
@@ -164,6 +166,12 @@ class Aggregate
      */
     public function __construct(string $screenName, string $listName)
     {
+        if ($listName === null) {
+            throw new InvalidArgumentException(
+                'An aggregate requires a valid list name.'
+            );
+        }
+
         $this->name = $listName;
         $this->screenName = $screenName;
         $this->createdAt = new \DateTime();
@@ -179,7 +187,7 @@ class Aggregate
     /**
      * @return bool
      */
-    public function isMemberAggregate()
+    public function isMemberAggregate(): bool
     {
         return strpos($this->name, AggregateRepository::PREFIX_MEMBER_AGGREGATE) === 0;
     }
@@ -189,7 +197,21 @@ class Aggregate
      *     targetEntity="App\Aggregate\Entity\MemberAggregateSubscription",
      *     inversedBy="aggregates"
      * )
-     * @ORM\JoinColumn(name="name", referencedColumnName="list_name")
+     * @ORM\JoinColumn(name="member_aggregate_id", referencedColumnName="id")
      */
     private $memberAggregateSubscription;
+
+    /**
+     * @param MemberAggregateSubscription $memberAggregateSubscription
+     *
+     * @return $this
+     */
+    public function setMemberSubscription(
+        MemberAggregateSubscription $memberAggregateSubscription
+    ): MemberSubscriptionInterface
+    {
+        $this->memberAggregateSubscription = $memberAggregateSubscription;
+
+        return $this;
+    }
 }
