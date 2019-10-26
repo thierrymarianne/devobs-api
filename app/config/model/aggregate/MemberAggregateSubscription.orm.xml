@@ -32,6 +32,11 @@
             />
         </many-to-one>
 
+        <one-to-many
+            field="aggregates"
+            target-entity="WeavingTheWeb\Bundle\ApiBundle\Entity\Aggregate"
+            mapped-by="memberAggregateSubscription" />
+
         <field
             name="listName"
             column="list_name"
