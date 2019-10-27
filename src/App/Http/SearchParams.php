@@ -6,6 +6,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class SearchParams
 {
+    const PARAM_AGGREGATE_IDS = 'aggregateIds';
+
     /**
      * @var PaginationParams
      */

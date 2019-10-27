@@ -81,7 +81,7 @@ class HighlightRepository extends EntityRepository implements PaginationAwareRep
 
         $this->applyCriteria($queryBuilder, $searchParams);
 
-        $queryBuilder->groupBy('h.status');
+        $queryBuilder->groupBy(self::TABLE_ALIAS.'.status');
         $queryBuilder->addOrderBy('total_retweets', 'DESC');
 
         $results = $queryBuilder->getQuery()->getArrayResult();
@@ -293,19 +293,14 @@ class HighlightRepository extends EntityRepository implements PaginationAwareRep
      */
     public function selectDistinctAggregates(SearchParams $searchParams): array
     {
-        $aggregateRestriction = 'AND a.name = ? ';
-        $groupBy = 'GROUP BY h.member_id';
-
-        if ($this->accessingAdministrativeRoute($searchParams)) {
-            $aggregateRestriction = 'AND a.name != ? ';
-            $groupBy = 'GROUP BY h.aggregate_id';
-        }
-
         $excludeRetweets = !$searchParams->getParams()['includeRetweets'];
         $clauseAboutRetweets = '';
         if ($excludeRetweets) {
             $clauseAboutRetweets = 'AND h.is_retweet = 0';
         }
+
+        $aggregateRestriction = $this->getConditionOnAggregateToSelectDistinctAggregates($searchParams);
+        $groupBy = $this->getGroupByClauseToSelectDistinctAggregates($searchParams);
 
         $queryDistinctAggregates = <<< QUERY
                 SELECT
@@ -419,6 +414,43 @@ QUERY;
             Join::WITH,
             $condition
         );
+    }
+
+    /**
+     * @param SearchParams $searchParams
+     *
+     * @return string
+     */
+    private function getConditionOnAggregateToSelectDistinctAggregates(
+        SearchParams $searchParams
+    ): string {
+        $aggregateRestriction = 'AND a.name = ? ';
+        if ($this->accessingAdministrativeRoute($searchParams)) {
+            $aggregateRestriction = 'AND a.name != ? ';
+        }
+
+        return $aggregateRestriction;
+    }
+
+    /**
+     * @param SearchParams $searchParams
+     *
+     * @return string
+     */
+    private function getGroupByClauseToSelectDistinctAggregates(
+        SearchParams $searchParams
+    ): string {
+        $groupBy = 'GROUP BY h.member_id';
+
+        if ($searchParams->hasParam(SearchParams::PARAM_AGGREGATE_IDS)) {
+            return $groupBy;
+        }
+
+        if ($this->accessingAdministrativeRoute($searchParams)) {
+            $groupBy = 'GROUP BY h.aggregate_id';
+        }
+
+        return $groupBy;
     }
 
     /**
