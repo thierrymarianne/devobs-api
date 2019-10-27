@@ -26,6 +26,7 @@ try {
 } catch (\Exception $exception) {
     // Errors will be visible in server logs in case of logs having wrong permissions
     error_log($exception->getMessage());
+    exit();
 }
 
 $response->send();
