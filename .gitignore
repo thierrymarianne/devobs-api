@@ -1,3 +1,4 @@
+*.ini
 app/*.xml
 app/bootstrap.php.cache
 app/cache
