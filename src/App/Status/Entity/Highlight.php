@@ -2,27 +2,29 @@
 
 namespace App\Status\Entity;
 
-use App\Aggregate\Entity\MemberAggregateSubscription;
 use App\Member\MemberInterface;
+use DateTime;
 use Predis\Configuration\Option\Aggregate;
+use WeavingTheWeb\Bundle\ApiBundle\Entity\Status;
 use WeavingTheWeb\Bundle\ApiBundle\Entity\StatusInterface;
+use WTW\UserBundle\Entity\User;
 
 class Highlight
 {
     private $id;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     private $publicationDateTime;
 
     /**
-     * @var \WeavingTheWeb\Bundle\ApiBundle\Entity\Status
+     * @var Status
      */
     private $status;
 
     /**
-     * @var \WTW\UserBundle\Entity\User
+     * @var User
      */
     private $member;
 
@@ -42,7 +44,7 @@ class Highlight
     private $aggregateName;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     private $retweetedStatusPublicationDate;
 
@@ -59,7 +61,7 @@ class Highlight
     public function __construct(
         MemberInterface $member,
         StatusInterface $status,
-        \DateTime $publicationDateTime
+        DateTime $publicationDateTime
     ) {
         $this->publicationDateTime = $publicationDateTime;
         $this->member = $member;
