@@ -7,15 +7,21 @@ use App\Http\SearchParams;
 use App\Aggregate\Repository\PaginationAwareTrait;
 use App\Conversation\ConversationAwareTrait;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
+use InvalidArgumentException;
 use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
 
 class HighlightRepository extends EntityRepository implements PaginationAwareRepositoryInterface
 {
+    public const TABLE_ALIAS = 'h';
+
+    private const SEARCH_PERIOD_DATE_FORMAT = 'Y-m-d';
+
     use PaginationAwareTrait;
     use ConversationAwareTrait;
 
@@ -34,17 +40,10 @@ class HighlightRepository extends EntityRepository implements PaginationAwareRep
      */
     public $logger;
 
-    const TABLE_ALIAS = 'h';
-
-    public function __construct($entityManager, ClassMetadata $class)
-    {
-        parent::__construct($entityManager, $class);
-    }
-
     /**
      * @param SearchParams $searchParams
      * @return int
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function countTotalPages(SearchParams $searchParams): int
     {
@@ -54,7 +53,7 @@ class HighlightRepository extends EntityRepository implements PaginationAwareRep
     /**
      * @param SearchParams $searchParams
      * @return array
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function findHighlights(SearchParams $searchParams): array
     {
@@ -175,9 +174,9 @@ class HighlightRepository extends EntityRepository implements PaginationAwareRep
         QueryBuilder $queryBuilder,
         SearchParams $searchParams
     ): self {
-        $retweetedStatusPublicationDate = "COALESCE(
+        $retweetedStatusPublicationDate = 'COALESCE(
                 DATE(
-                    DATEADD(" .
+                    DATEADD(' .
             self::TABLE_ALIAS . ".retweetedStatusPublicationDate, 1, 'HOUR'
                     )
                 ),
@@ -185,12 +184,12 @@ class HighlightRepository extends EntityRepository implements PaginationAwareRep
             )";
 
         if ($this->overOneDay($searchParams) && !$searchParams->hasParam('term')) {
-            $queryBuilder->andWhere($retweetedStatusPublicationDate . " = :startDate");
+            $queryBuilder->andWhere($retweetedStatusPublicationDate . ' = :startDate');
         }
 
         if ($this->overMoreThanADay($searchParams)) {
-            $queryBuilder->andWhere($retweetedStatusPublicationDate . " >= :startDate");
-            $queryBuilder->andWhere($retweetedStatusPublicationDate . " <= :endDate");
+            $queryBuilder->andWhere($retweetedStatusPublicationDate . ' >= :startDate');
+            $queryBuilder->andWhere($retweetedStatusPublicationDate . ' <= :endDate');
         }
 
         return $this;
@@ -289,7 +288,7 @@ class HighlightRepository extends EntityRepository implements PaginationAwareRep
     /**
      * @param SearchParams $searchParams
      * @return array
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function selectDistinctAggregates(SearchParams $searchParams): array
     {
@@ -357,9 +356,7 @@ QUERY;
             return [];
         }
 
-        $aggregates = $statement->fetchAll();
-
-        return $aggregates;
+        return $statement->fetchAll();
     }
 
     /**
@@ -418,6 +415,20 @@ QUERY;
 
     /**
      * @param SearchParams $searchParams
+     */
+    private function assertSearchPeriodIsValid(SearchParams $searchParams): void {
+        if (
+            !($searchParams->getParams()['startDate'] instanceof \DateTime)
+            || !($searchParams->getParams()['endDate'] instanceof \DateTime)
+        ) {
+            throw new InvalidArgumentException(
+                'Expected end date and start date to be instances of ' . \DateTime::class
+            );
+        }
+    }
+
+    /**
+     * @param SearchParams $searchParams
      *
      * @return string
      */
@@ -459,8 +470,10 @@ QUERY;
      */
     private function overOneDay(SearchParams $searchParams): bool
     {
-        return $searchParams->getParams()['startDate']->format('Y-m-d') ===
-            $searchParams->getParams()['endDate']->format('Y-m-d');
+        $this->assertSearchPeriodIsValid($searchParams);
+
+        return $searchParams->getParams()['startDate']->format(self::SEARCH_PERIOD_DATE_FORMAT) ===
+            $searchParams->getParams()['endDate']->format(self::SEARCH_PERIOD_DATE_FORMAT);
     }
 
     /**
@@ -469,8 +482,10 @@ QUERY;
      */
     private function overMoreThanADay(SearchParams $searchParams): bool
     {
-        return $searchParams->getParams()['startDate']->format('Y-m-d') !==
-            $searchParams->getParams()['endDate']->format('Y-m-d');
+        $this->assertSearchPeriodIsValid($searchParams);
+
+        return $searchParams->getParams()['startDate']->format(self::SEARCH_PERIOD_DATE_FORMAT) !==
+            $searchParams->getParams()['endDate']->format(self::SEARCH_PERIOD_DATE_FORMAT);
     }
 
     /**
@@ -482,33 +497,46 @@ QUERY;
     {
         return array_map(
             function ($status) use ($searchParams) {
+                $statusKey = 'status';
+                $totalFavoritesKey = 'total_favorites';
+                $totalRetweetsKey = 'total_retweets';
+                $favoriteCountKey = 'favorite_count';
+                $originalDocumentKey = 'original_document';
+
                 $extractedProperties = [
-                    'status' => $this->extractStatusProperties(
+                    $statusKey => $this->extractStatusProperties(
                         [$status],
                         false)[0]
                 ];
 
-                $decodedDocument = json_decode($status['original_document'], true);
-                $decodedDocument['retweets_count'] = intval($status['total_retweets']);
-                $decodedDocument['favorites_count'] = intval($status['total_favorites']);
-                $extractedProperties['status']['retweet_count'] = intval($status['total_retweets']);
-                $extractedProperties['status']['favorite_count'] = intval($status['total_favorites']);
-                $extractedProperties['status']['original_document'] = json_encode($decodedDocument);
+                $decodedDocument = json_decode(
+                    $status[$originalDocumentKey],
+                    true,
+                    512,
+                    JSON_THROW_ON_ERROR
+                );
+                $decodedDocument['retweets_count'] = (int) $status[$totalRetweetsKey];
+                $decodedDocument['favorites_count'] = (int) $status[$totalFavoritesKey];
+                $extractedProperties[$statusKey]['retweet_count'] = (int) $status[$totalRetweetsKey];
+                $extractedProperties[$statusKey][$favoriteCountKey] = (int) $status[$totalFavoritesKey];
+                $extractedProperties[$statusKey][$originalDocumentKey] = json_encode($decodedDocument);
 
                 $status['lastUpdate'] = $status['last_update'];
 
                 $includeRetweets = $searchParams->getParams()['includeRetweets'];
-                if ($includeRetweets && $extractedProperties['status']['favorite_count'] === 0) {
-                    $extractedProperties['status']['favorite_count'] = $decodedDocument['retweeted_status']['favorite_count'];
+                if ($includeRetweets && $extractedProperties[$statusKey][$favoriteCountKey] === 0) {
+                    $extractedProperties[$statusKey][$favoriteCountKey] = $decodedDocument['retweeted_status'][$favoriteCountKey];
                 }
 
-                unset($status['total_retweets']);
-                unset($status['total_favorites']);
-                unset($status['original_document']);
-                unset($status['screen_name']);
-                unset($status['author_avatar']);
-                unset($status['status_id']);
-                unset($status['last_update']);
+                unset(
+                    $status[$totalRetweetsKey],
+                    $status[$totalFavoritesKey],
+                    $status[$originalDocumentKey],
+                    $status['screen_name'],
+                    $status['author_avatar'],
+                    $status['status_id'],
+                    $status['last_update']
+                );
 
                 return array_merge($status, $extractedProperties);
             },
