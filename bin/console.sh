@@ -475,6 +475,27 @@ function is_rabbitmq_not_ready {
   echo 1
 }
 
+function get_php_docker_image_name() {
+    local docker_image_name
+    docker_image_name="$(get_image_name_for "php")${memory}"
+    echo '=> About to run container from docker image "'"${docker_image_name}"'"' 1>&2
+
+    echo "${docker_image_name}"
+}
+
+function check_security_of_php_dependencies() {
+  local project_dir
+  project_dir='/var/www/devobs'
+
+  local php_docker_image_name
+  php_docker_image_name=$(get_php_docker_image_name)
+
+  local command
+  command="${php_docker_image_name} /bin/sh -c 'cd "${project_dir}" && "
+  command="${command}"'php ./bin/security-checker security:check'"'"
+  echo "${command}" | make run-php
+}
+
 function clear_backend_application_cache() {
   local project_dir
   project_dir='/var/www/devobs'
