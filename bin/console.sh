@@ -238,13 +238,16 @@ function consume_amqp_messages_for_news_status {
 }
 
 function purge_queues() {
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-user-status -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-conversation-status -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-aggregates-status -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-aggregates-likes -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-news-status -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-network -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-timely-status -p /weaving_the_web
+    local container_name
+    container_name="$(get_container_name_for "rabbitmq")"
+
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-user-status -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-conversation-status -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-aggregates-status -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-aggregates-likes -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-news-status -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-network -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-timely-status -p /weaving_the_web
 }
 
 function execute_command () {
