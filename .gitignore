@@ -13,3 +13,13 @@ composer.phar
 provisioning/containers/mysql/templates/mysql/my.cnf
 provisioning/volumes/mysql/*
 vendor
+
+bin/doctrine
+bin/doctrine-dbal
+bin/doctrine-migrations
+bin/doctrine.php
+bin/google-cloud-batch
+bin/jp.php
+bin/refresh_statuses.sh
+bin/sql-formatter
+bin/vendors
