@@ -1,8 +1,12 @@
 dist: bionic
+
 git:
     depth: 3
+
 sudo: false
+
 language: php
+
 php:
     - '7.3'
 addons:
@@ -12,6 +16,10 @@ addons:
 services:
     - mysql
     - redis-server
+
+before_script:
+    - phpenv config-rm xdebug.ini
+
 before_install:
     - mysql -e 'CREATE DATABASE test;'
 install:
