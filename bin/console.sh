@@ -466,7 +466,10 @@ function migrate_schema {
 }
 
 function is_rabbitmq_not_ready {
-  if [ "$(docker logs rabbitmq | grep -c 'startup complete')" -eq 0 ];
+  local container_expected_to_be_ready
+  container_expected_to_be_ready="$(get_container_name_for "rabbitmq")"
+
+  if [ "$(docker logs "${container_expected_to_be_ready}" | grep -c 'startup complete')" -eq 0 ];
   then
     echo 0
     return 1
