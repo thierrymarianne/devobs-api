@@ -1103,6 +1103,7 @@ function run_php() {
 
     local command=$(echo -n 'docker run '"${network}"'\
     -e '"${symfony_environment}" '\
+    --memory=1G \
     -v '`pwd`'/provisioning/containers/php/templates/20-no-xdebug.ini.dist:/usr/local/etc/php/conf.d/20-xdebug.ini \
     -v '`pwd`'/provisioning/volumes/php/composer:/root/.composer \
     -v '`pwd`':/var/www/devobs \
