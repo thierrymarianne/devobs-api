@@ -1101,8 +1101,11 @@ function run_php() {
     local command=$(echo -n 'docker run '"${network}"'\
     -e '"${symfony_environment}" '\
     -v '`pwd`'/provisioning/containers/php/templates/20-no-xdebug.ini.dist:/usr/local/etc/php/conf.d/20-xdebug.ini \
+    -v '`pwd`'/provisioning/volumes/php/composer:/root/.composer \
     -v '`pwd`':/var/www/devobs \
-    --name='"$(get_container_name_for "php")${suffix}"' '"${arguments}")
+    --name='"$(get_container_name_for "php")${suffix}"' \
+    '"$(get_php_docker_image_name)"' \
+    '"${arguments}")
 
     echo 'About to execute '"${command}"
 
