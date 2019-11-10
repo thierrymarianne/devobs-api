@@ -7,6 +7,6 @@ else
     current_directory=`dirname "$0"`
 fi
 
-source "${current_directory}"/functions.sh
+source "${current_directory}"/console.sh
 
 consume_amqp_messages_for_member_status
