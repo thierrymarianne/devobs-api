@@ -8,6 +8,8 @@ use App\Member\MemberInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\ORM\QueryBuilder;
 use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
 use WeavingTheWeb\Bundle\TwitterBundle\Exception\NotFoundMemberException;
@@ -79,7 +81,7 @@ class UserRepository extends EntityRepository
      * @param string|int         $identifier
      * @param string|null $screenName
      * @return MemberInterface|null|object|User
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function suspendMemberByScreenNameOrIdentifier($identifier)
     {
@@ -93,7 +95,7 @@ class UserRepository extends EntityRepository
     /**
      * @param string $screenName
      * @return null|object|User
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function suspendMember(string $screenName)
     {
@@ -121,7 +123,7 @@ class UserRepository extends EntityRepository
     /**
      * @param $screenName
      * @return MemberInterface|null
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareUserAsNotFoundByUsername($screenName)
     {
@@ -137,7 +139,7 @@ class UserRepository extends EntityRepository
     /**
      * @param $screenName
      * @return MemberInterface|null
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareMemberAsSuspended(string $screenName)
     {
@@ -153,7 +155,7 @@ class UserRepository extends EntityRepository
     /**
      * @param MemberInterface $user
      * @return MemberInterface
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareUserAsNotFound(MemberInterface $user)
     {
@@ -165,7 +167,7 @@ class UserRepository extends EntityRepository
     /**
      * @param User $user
      * @return MemberInterface
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareUserAsFound(User $user)
     {
@@ -177,7 +179,7 @@ class UserRepository extends EntityRepository
     /**
      * @param string $screenName
      * @return MemberInterface
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareUserAsProtected(string $screenName)
     {
@@ -197,8 +199,10 @@ class UserRepository extends EntityRepository
 
     /**
      * @param MemberInterface $member
+     *
      * @return MemberInterface
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
+     * @throws ORMException
      */
     public function saveMember(MemberInterface $member)
     {
@@ -213,7 +217,7 @@ class UserRepository extends EntityRepository
     /**
      * @param User $member
      * @return MemberInterface
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     protected function saveUser(User $member)
     {
@@ -225,7 +229,7 @@ class UserRepository extends EntityRepository
      * @param string $screenName
      * @return MemberInterface
      * @throws NotFoundMemberException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareMaxStatusIdForMemberWithScreenName(string $maxStatusId, string $screenName)
     {
@@ -243,7 +247,7 @@ class UserRepository extends EntityRepository
      * @param string $screenName
      * @return MemberInterface
      * @throws NotFoundMemberException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareMinStatusIdForMemberWithScreenName(string $minStatusId, string $screenName)
     {
@@ -261,7 +265,7 @@ class UserRepository extends EntityRepository
      * @param string $screenName
      * @return MemberInterface
      * @throws NotFoundMemberException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareMaxLikeIdForMemberWithScreenName(string $maxLikeId, string $screenName)
     {
@@ -279,7 +283,7 @@ class UserRepository extends EntityRepository
      * @param string $screenName
      * @return MemberInterface
      * @throws NotFoundMemberException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareMinLikeIdForMemberWithScreenName(string $minLikeId, string $screenName)
     {
@@ -297,7 +301,7 @@ class UserRepository extends EntityRepository
      * @param string $screenName
      * @return MemberInterface
      * @throws NotFoundMemberException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareTotalStatusesOfMemberWithName(int $totalStatuses, string $screenName) {
         $member = $this->ensureMemberExists($screenName);
@@ -316,7 +320,7 @@ class UserRepository extends EntityRepository
      * @param string $memberName
      * @return MemberInterface
      * @throws NotFoundMemberException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareTotalLikesOfMemberWithName(int $totalLikes, string $memberName) {
         $member = $this->ensureMemberExists($memberName);
@@ -335,7 +339,7 @@ class UserRepository extends EntityRepository
      * @param string $screenName
      * @return null|object
      * @throws NotFoundMemberException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function incrementTotalStatusesOfMemberWithName(
         int $statusesToBeAdded,
@@ -354,7 +358,7 @@ class UserRepository extends EntityRepository
      * @param string $memberName
      * @return MemberInterface
      * @throws NotFoundMemberException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function incrementTotalLikesOfMemberWithName(
         int $likesToBeAdded,
@@ -399,7 +403,7 @@ class UserRepository extends EntityRepository
     /**
      * @param int $identifier
      * @return MemberInterface
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function suspendMemberByIdentifier(int $identifier)
     {
@@ -427,7 +431,7 @@ class UserRepository extends EntityRepository
     /**
      * @param string $screenName
      * @return MemberInterface
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     public function declareMemberHavingScreenNameNotFound(string $screenName)
     {

@@ -5,7 +5,7 @@ namespace App\Member\Repository;
 use App\Http\PaginationParams;
 use App\Member\Entity\MemberSubscription;
 use App\Member\MemberInterface;
-use Doctrine\DBAL\Statement;
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityRepository;
 use JsonSchema\Exception\JsonDecodingException;
 use Symfony\Component\HttpFoundation\Request;
@@ -48,7 +48,7 @@ class MemberSubscriptionRepository extends EntityRepository
      * @param MemberInterface $member
      * @param array           $subscriptions
      * @return array
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function findMissingSubscriptions(MemberInterface $member, array $subscriptions)
     {
@@ -94,9 +94,9 @@ QUERY;
     /**
      * @param MemberInterface $member
      * @return bool
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
-    public function cancelAllSubscriptionsFor(MemberInterface $member)
+    public function cancelAllSubscriptionsFor(MemberInterface $member): bool
     {
         $query = <<< QUERY
             UPDATE member_subscription ms, weaving_user u
@@ -123,7 +123,7 @@ QUERY;
      * @param MemberInterface $member
      * @param Request         $request
      * @return array
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function getMemberSubscriptions(
         MemberInterface $member,
@@ -167,7 +167,7 @@ QUERY;
     /**
      * @param MemberInterface $member
      * @return array|mixed
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function countMemberSubscriptions(MemberInterface $member)
     {
@@ -204,7 +204,7 @@ QUERY;
      * @param PaginationParams|null  $paginationParams
      * @param AggregateIdentity|null $aggregateIdentity
      * @return array
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function selectMemberSubscriptions(
         MemberInterface $member,
@@ -367,7 +367,7 @@ QUERY;
      * @param MemberInterface  $member
      * @param PaginationParams $paginationParams
      * @return array
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     private function getAggregatesRelatedToMemberSubscriptions(
         MemberInterface $member,
