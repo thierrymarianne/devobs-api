@@ -9,6 +9,7 @@ use App\Serialization\JsonEncodingAwareInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use WTW\UserBundle\Model\User as BaseUser;
+use function trim;
 
 /**
  * @author Thierry Marianne <thierry.marianne@weaving-the-web.org>
@@ -262,6 +263,13 @@ class User extends BaseUser implements TwitterMemberInterface, JsonEncodingAware
     public function getTwitterID(): ?string
     {
         return $this->twitterID;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasTwitterId(): bool {
+        return !empty(trim($this->getTwitterID()));
     }
 
     /**

@@ -3,9 +3,10 @@
 namespace App\Member\Entity;
 
 use App\Member\MemberInterface;
+use App\Member\TwitterMemberInterface;
 use WTW\UserBundle\Entity\User;
 
-class NotFoundMember implements MemberInterface
+class NotFoundMember implements TwitterMemberInterface
 {
     use MemberTrait;
     use ExceptionalUserInterfaceTrait;
