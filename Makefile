@@ -136,9 +136,6 @@ produce-amqp-messages-from-news-lists: ## Produce messages from news list
 produce-amqp-messages-from-member-timeline: ## Produce messages from member timeline
 		@/bin/bash -c 'source ./bin/console.sh && produce_amqp_messages_from_member_timeline'
 
-produce-amqp-messages-to-import-member-network: ## Produce messages to import the network of a member
-		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && source ./bin/console.sh && produce_amqp_messages_to_import_member_network'
-
 refresh-statuses: ## Refresh statuses
 		@/bin/bash -c 'source ./bin/console.sh && refresh_statuses'
 
@@ -162,3 +159,9 @@ follow-today-statuses: ## Filter the statuses for today from the log file
 
 run-php-unit-tests: ## Run unit tests with PHPUnit
 		@/bin/bash -c 'source ./bin/console.sh && run_php_unit_tests'
+
+schedule-network-discovery: ## Schedule the discovery of a network attending a microblogging platform
+		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && source ./bin/console.sh && schedule_network_discovery'
+
+start-discovering-network: ## Start discovering a network attending a microblogging platform
+		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && source ./bin/start-discovering-network.sh'

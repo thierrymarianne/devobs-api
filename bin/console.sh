@@ -1178,21 +1178,6 @@ function produce_amqp_messages_from_member_timeline {
     run_command 'app/console weaving_the_web:amqp:produce:user_timeline --screen_name="'"${username}"'" -vvv'
 }
 
-function produce_amqp_messages_to_import_member_network {
-    export NAMESPACE="produce_messages_to_import_network_of_member"
-    before_running_command
-
-    if [ -z "${MEMBER_NAME}" ];
-    then
-        echo 'Please export a valid member name:'
-        echo 'export MEMBER_NAME="richhickey"'
-
-        return
-    fi
-
-    run_command 'app/console import-network --member-name="'${MEMBER_NAME}'"'
-}
-
 function before_running_command() {
     make remove-php-container
 
@@ -1422,4 +1407,19 @@ function today_statuses() {
 
 function follow_today_statuses() {
     tail -f app/logs/dev.log | awk '{$1=$2=$3="";print $0}' | sed -e 's/^\s\+//' | grep `date -I` | awk '{$1=$2="";print $0}'
+}
+
+function schedule_network_discovery {
+    export NAMESPACE="schedule_network_discovery"
+    before_running_command
+
+    if [ -z "${MEMBER_NAME}" ];
+    then
+        echo 'Please export a valid member name:'
+        echo 'export MEMBER_NAME="richhickey"'
+
+        return
+    fi
+
+    run_command 'app/console import-network --member-name="'${MEMBER_NAME}'"'
 }

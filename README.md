@@ -87,10 +87,16 @@ Produce messages from lists of members
 make produce-amqp-messages-from-members-lists
 ```
 
-Import the network of a member
+Schedule the discovery of a network
 
 ```
-export MEMBER_NAME="DrEugeniaCheng" && make produce-amqp-messages-to-import-member-network 
+export MEMBER_NAME="DrEugeniaCheng" && make schedule-network-discovery
+```
+
+Start discovering a network
+
+```
+make start-discovering-network
 ```
 
 Consume Twitter API from messages
