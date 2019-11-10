@@ -74,9 +74,9 @@ class ImportNetworkCommand extends Command implements CommandReturnCodeAwareInte
         $memberList = $this->input->getOption(self::OPTION_MEMBER_LIST);
         $memberName = $this->input->getOption(self::OPTION_MEMBER_NAME);
         
-        $validMemberList = trim($memberList) !== 0;
+        $validMemberList = $this->isNotEmpty($memberList);
 
-        if (!$validMemberList && trim($memberName) !== 0) {
+        if (!$validMemberList && $this->isEmpty($memberName)) {
             throw new \LogicException(implode([
                 'There should be at least a non-empty member list ',
                 'or a member name passed as argument.'
@@ -102,6 +102,24 @@ class ImportNetworkCommand extends Command implements CommandReturnCodeAwareInte
         $this->networkRepository->saveNetwork([$memberName]);
 
         return self::RETURN_STATUS_SUCCESS;
+    }
+
+    /**
+     * @param $subject
+     *
+     * @return bool
+     */
+    private function isEmpty($subject): bool {
+        return empty(trim($subject));
+    }
+
+    /**
+     * @param $subject
+     *
+     * @return bool
+     */
+    private function isNotEmpty($subject): bool {
+        return ! $this->isEmpty($subject);
     }
 
     private function serializeMessageBody($messageBody)
