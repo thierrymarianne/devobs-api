@@ -25,6 +25,24 @@ Build a PHP container image
 make build-php-container
 ```
 
+Intall all PHP vendors
+
+```
+make install-php-dependencies
+```
+
+Require a PHP vendor
+
+```
+export VENDOR_NAME='symfony/symfony:^3.4.x' && make require-php-dependency
+```
+
+Remove a PHP vendor
+
+```
+export VENDOR_NAME='symfony/symfony' && make remove-php-dependency
+```
+
 ### MySQL
 
 Initialize MySQL from `app/config/parameters.yml`

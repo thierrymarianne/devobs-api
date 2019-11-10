@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# 2019-11-10 - Notes about dependencies addition or removal
+#
+# ```
+# export VENDOR_NAME='symfony/symfony:^3.4.x' && make require-php-dependency
+# export VENDOR_NAME='symfony/symfony' && make remove-php-dependency
+# ```
+#
 # 2019-10-19 - Notes about clearing application cache
 #
 # ```
@@ -520,10 +527,106 @@ function install_php_dependencies {
     done
 
     local project_dir="$(get_project_dir)"
-    local command=$(echo -n 'php /bin/bash -c "cd '"${project_dir}"' &&
+    local command=$(echo -n '/bin/bash -c "cd '"${project_dir}"' &&
     source '"${project_dir}"'/bin/install-composer.sh &&
     php '"${project_dir}"'/composer.phar install --prefer-dist"')
     echo ${command} | make run-php
+}
+
+function require_php_dependency {
+    local dependency
+    dependency="${1}"
+
+    if [ -z "${GITHUB_OAUTH_TOKEN}" ];
+    then
+        echo 'Please export a GitHub OAuth token as an environment variable e.g.'
+        echo 'export GITHUB_OAUTH_TOKEN="tok"'
+
+        return 1
+    fi
+
+    if [ -z "${VENDOR_NAME}" ] && [ -z "${dependency}" ];
+    then
+        echo 'Please export a vendor name as an environment variable e.g.'
+        echo 'export VENDOR_NAME="symfony/symfony:^3.x"'
+
+        return 1
+    fi
+
+    if [ -z "${dependency}" ];
+    then
+      echo 'Please pass a non-empty vendor name as first argument e.g.'
+      echo '"symfony/symfony:^3.x"'
+
+      return 1
+    fi
+
+    # Ensure dependency is available
+    # to prevent failure when caching configuration parameters
+    run_rabbitmq_container
+
+    # Wait for RabbitMQ startup to be complete
+    while [ `is_rabbitmq_not_ready` -eq 0 ];
+    do
+        sleep 1
+        echo 'Waiting for RabbitMQ to be ready...'
+    done
+
+    local project_dir="$(get_project_dir)"
+    local command=$(echo -n '/bin/bash -c "cd '"${project_dir}"' &&
+    source '"${project_dir}"'/bin/install-composer.sh &&
+    php '"${project_dir}"'/composer.phar config -g github-oauth.github.com '"${GITHUB_OAUTH_TOKEN}"' &&
+    php '"${project_dir}"'/composer.phar -vvv req '"'"''"${dependency}""'"'"')
+
+    echo "${command}" | make run-php
+}
+
+function remove_php_dependency {
+    local dependency
+    dependency="${1}"
+
+    if [ -z "${GITHUB_OAUTH_TOKEN}" ];
+    then
+        echo 'Please export a GitHub OAuth token as an environment variable e.g.'
+        echo 'export GITHUB_OAUTH_TOKEN="tok"'
+
+        return 1
+    fi
+
+    if [ -z "${VENDOR_NAME}" ] && [ -z "${dependency}" ];
+    then
+        echo 'Please export a vendor name as environment variable e.g.'
+        echo 'export VENDOR_NAME="symfony/symfony:^3.x"'
+
+        return 1
+    fi
+
+    if [ -z "${dependency}" ];
+    then
+      echo 'Please pass a non-empty vendor name as first argument e.g.'
+      echo '"symfony/symfony:^3.x"'
+
+      return 1
+    fi
+
+    # Ensure dependency is available
+    # to prevent failure when caching configuration parameters
+    run_rabbitmq_container
+
+    # Wait for RabbitMQ startup to be complete
+    while [ `is_rabbitmq_not_ready` -eq 0 ];
+    do
+        sleep 1
+        echo 'Waiting for RabbitMQ to be ready...'
+    done
+
+    local project_dir="$(get_project_dir)"
+    local command=$(echo -n '/bin/bash -c "cd '"${project_dir}"' &&
+    source '"${project_dir}"'/bin/install-composer.sh &&
+    php '"${project_dir}"'/composer.phar config -g github-oauth.github.com '"${GITHUB_OAUTH_TOKEN}"' &&
+    php '"${project_dir}"'/composer.phar remove --no-update '"'"''"${dependency}""'"'"')
+
+    echo "${command}" | make run-php
 }
 
 function get_gateway() {
