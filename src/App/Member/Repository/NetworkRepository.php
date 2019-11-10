@@ -2,6 +2,7 @@
 
 namespace App\Member\Repository;
 
+use App\Exception\⊥;
 use App\Member\Entity\ExceptionalMember;
 use App\Member\Entity\NotFoundMember;
 use App\Member\Entity\ProtectedMember;
@@ -183,6 +184,8 @@ class NetworkRepository
      * @param string   $memberId
      * @return MemberInterface|null|object
      * @throws \Doctrine\ORM\OptimisticLockException
+     *
+     * @return MemberInterface|⊥
      */
     public function guardAgainstExceptionalMemberWhenLookingForOne(
         callable $doing,
