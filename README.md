@@ -87,6 +87,12 @@ Produce messages from lists of members
 make produce-amqp-messages-from-members-lists
 ```
 
+Import the network of a member
+
+```
+export MEMBER_NAME=DrEugeniaCheng && make import-member-network
+```
+
 Consume Twitter API from messages
 
 ```
