@@ -8,7 +8,11 @@ use App\Member\Entity\NotFoundMember;
 use App\Member\Entity\ProtectedMember;
 use App\Member\Entity\SuspendedMember;
 use App\Member\MemberInterface;
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Psr\Log\LoggerInterface;
 use WeavingTheWeb\Bundle\TwitterBundle\Api\Accessor;
 use WeavingTheWeb\Bundle\TwitterBundle\Exception\NotFoundMemberException;
 use WeavingTheWeb\Bundle\TwitterBundle\Exception\ProtectedAccountException;
@@ -17,7 +21,6 @@ use WTW\UserBundle\Repository\UserRepository;
 
 class NetworkRepository
 {
-
     /**
      * @var MemberSubscribeeRepository
      */
@@ -44,21 +47,26 @@ class NetworkRepository
     public $accessor;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     public $logger;
 
     /**
      * @param MemberInterface $member
      * @param array           $subscriptions
-     * @return array
+     *
+     * @return bool
+     * @throws DBALException
      */
-    private function saveMemberSubscriptions(MemberInterface $member, array $subscriptions)
-    {
+    private function saveMemberSubscriptions(
+        MemberInterface $member,
+        array $subscriptions
+    ): bool {
         $this->memberSubscriptionRepository->cancelAllSubscriptionsFor($member);
 
         if (count($subscriptions) > 0) {
-            $subscriptions = $this->memberSubscriptionRepository->findMissingSubscriptions($member, $subscriptions);
+            $subscriptions = $this->memberSubscriptionRepository
+                ->findMissingSubscriptions($member, $subscriptions);
         }
 
         return array_walk(
@@ -99,12 +107,17 @@ class NetworkRepository
     /**
      * @param MemberInterface $member
      * @param array           $subscribees
-     * @return array
+     *
+     * @return bool
+     * @throws DBALException
      */
-    private function saveMemberSubscribees(MemberInterface $member, array $subscribees)
-    {
+    private function saveMemberSubscribees(
+        MemberInterface $member,
+        array $subscribees
+    ): bool {
         if (count($subscribees) > 0) {
-            $subscribees = $this->memberSubscribeeRepository->findMissingSubscribees($member, $subscribees);
+            $subscribees = $this->memberSubscribeeRepository
+                ->findMissingSubscribees($member, $subscribees);
         }
 
         return array_walk(
@@ -144,7 +157,13 @@ class NetworkRepository
 
     /**
      * @param string $memberId
-     * @return ExceptionalMember|MemberInterface|null|object
+     *
+     * @return MemberInterface|object|null
+     * @throws NotFoundMemberException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws ProtectedAccountException
+     * @throws SuspendedAccountException
      */
     public function ensureMemberExists(string $memberId)
     {
@@ -167,8 +186,12 @@ class NetworkRepository
                 $member = $this->accessor->ensureMemberHavingNameExists($member);
 
                 $friends = $this->accessor->showUserFriends($member->getTwitterUsername());
+
                 if ($member instanceof MemberInterface) {
-                    $this->saveMemberSubscriptions($member, $friends->ids);
+                    $this->saveMemberSubscriptions(
+                        $member,
+                        $friends->ids
+                    );
                 }
 
                 $subscribees = $this->accessor->showMemberSubscribees($member->getTwitterUsername());
@@ -182,10 +205,13 @@ class NetworkRepository
     /**
      * @param callable $doing
      * @param string   $memberId
-     * @return MemberInterface|null|object
-     * @throws \Doctrine\ORM\OptimisticLockException
      *
      * @return MemberInterface|⊥
+     * @throws NotFoundMemberException
+     * @throws OptimisticLockException
+     * @throws ProtectedAccountException
+     * @throws SuspendedAccountException
+     * @throws ORMException
      */
     public function guardAgainstExceptionalMemberWhenLookingForOne(
         callable $doing,
@@ -198,8 +224,8 @@ class NetworkRepository
             $this->logger->info($exception->getMessage());
 
             $member = $notFoundMember->make(
-                is_null($exception->screenName) ? $memberId : $exception->screenName,
-                intval($memberId)
+                $exception->screenName === null ? $memberId : $exception->screenName,
+                (int) $memberId
             );
         } catch (ProtectedAccountException $exception) {
             $protectedMember = new ProtectedMember();
@@ -207,7 +233,7 @@ class NetworkRepository
 
             $member = $protectedMember->make(
                 $exception->screenName,
-                intval($memberId)
+                (int) $memberId
             );
         } catch (SuspendedAccountException $exception) {
             $suspendedMember = new SuspendedMember();
@@ -215,7 +241,7 @@ class NetworkRepository
 
             $member = $suspendedMember->make(
                 $exception->screenName,
-                intval($memberId)
+                (int) $memberId
             );
         } catch (\Exception $exception) {
             $member = new ExceptionalMember();
@@ -227,7 +253,7 @@ class NetworkRepository
                 return $existingMember;
             }
 
-            if (!isset($exception->screenName)) {
+            if ($exception->screenName === null) {
                 $this->logger->critical($exception->getMessage());
 
                 throw $exception;
