@@ -4,7 +4,7 @@ namespace App\Member;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 
-interface MemberInterface extends UserInterface, TwitterMemberInterface
+interface MemberInterface extends UserInterface
 {
     /**
      * @return string

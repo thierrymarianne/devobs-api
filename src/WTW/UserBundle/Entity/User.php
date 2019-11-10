@@ -4,6 +4,7 @@ namespace WTW\UserBundle\Entity;
 
 use App\Member\MemberInterface;
 
+use App\Member\TwitterMemberInterface;
 use App\Serialization\JsonEncodingAwareInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
@@ -36,7 +37,7 @@ use WTW\UserBundle\Model\User as BaseUser;
  * @ORM\DiscriminatorColumn(name="usr_position_in_hierarchy", type="integer")
  * @ORM\DiscriminatorMap({"1" = "User", "0" = "\WTW\UserBundle\Tests\Security\Core\User\User"})
  */
-class User extends BaseUser implements MemberInterface, JsonEncodingAwareInterface
+class User extends BaseUser implements TwitterMemberInterface, JsonEncodingAwareInterface
 {
     /**
      * @var integer

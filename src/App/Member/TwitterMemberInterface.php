@@ -2,7 +2,7 @@
 
 namespace App\Member;
 
-interface TwitterMemberInterface
+interface TwitterMemberInterface extends MemberInterface
 {
     /**
      * @return string
