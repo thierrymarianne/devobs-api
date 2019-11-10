@@ -90,7 +90,7 @@ make produce-amqp-messages-from-members-lists
 Import the network of a member
 
 ```
-export MEMBER_NAME=DrEugeniaCheng && make import-member-network
+export MEMBER_NAME="DrEugeniaCheng" && make produce-amqp-messages-to-import-member-network 
 ```
 
 Consume Twitter API from messages
