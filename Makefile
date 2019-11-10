@@ -149,10 +149,10 @@ keep-php-container-running: ## Keep a running container having PHP
 		@/bin/bash -c 'source ./bin/console.sh && keep_php_container_running'
 
 consume-twitter-api-messages: ## Consume twitter API messages
-		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source bin/consume_twitter_api.sh'
+		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source ./bin/consume_twitter_api.sh'
 
 consume-twitter-api-news-messages: ## Consume twitter API news messages
-		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source bin/consume_twitter_api_for_news.sh'
+		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source ./bin/consume_twitter_api_for_news.sh'
 
 today-statuses: ## Filter the statuses for today from the log file
 		@/bin/bash -c 'source ./bin/console.sh && today_statuses'
