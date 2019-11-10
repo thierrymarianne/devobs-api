@@ -22,7 +22,7 @@
         }
     ],
     "require": {
-        "php": ">=7.3.0",
+        "php": "7.3.10",
         "ext-bc": "*",
         "ext-curl": "*",
         "ext-json": "*",
@@ -74,7 +74,7 @@
     "config": {
         "bin-dir": "bin",
         "platform": {
-            "php": ">=7.3.0"
+            "php": "7.3.10"
         },
         "sort-packages": true
     },
