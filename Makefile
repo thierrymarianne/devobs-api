@@ -151,6 +151,9 @@ consume-twitter-api-messages: ## Consume twitter API messages
 consume-twitter-api-news-messages: ## Consume twitter API news messages
 		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source bin/consume_twitter_api_for_news.sh'
 
+import-member-network: ## Import the network of a member
+		@/bin/bash -c 'source ./bin/console.sh && produce_amqp_messages_for_networks'
+
 today-statuses: ## Filter the statuses for today from the log file
 		@/bin/bash -c 'source ./bin/console.sh && today_statuses'
 

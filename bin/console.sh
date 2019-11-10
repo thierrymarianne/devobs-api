@@ -1153,6 +1153,17 @@ function produce_amqp_messages_for_networks {
     run_command 'app/console import-network --member-list="'${MEMBER_LIST}'"'
 }
 
+function import_network_for_member {
+    if [ -z "${MEMBER_NAME}" ];
+    then
+        echo 'Please export a valid member name: export MEMBER_NAME="richhickey"'
+
+        return
+    fi
+
+    run_command 'app/console import-network --member-name="'${MEMBER_NAME}'"'
+}
+
 function produce_amqp_messages_for_timely_statuses {
     export NAMESPACE="produce_messages_for_timely_statuses"
     before_running_command
