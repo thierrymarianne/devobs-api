@@ -1179,7 +1179,7 @@ function produce_amqp_messages_from_member_timeline {
 }
 
 function produce_amqp_messages_to_import_member_network {
-    export NAMESPACE="produce_messages_for_networks"
+    export NAMESPACE="produce_messages_to_import_network_of_member"
     before_running_command
 
     if [ -z "${MEMBER_NAME}" ];
