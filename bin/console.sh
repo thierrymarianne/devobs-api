@@ -1036,20 +1036,25 @@ function remove_php_fpm_container {
 }
 
 function run_php_script() {
-    local script="${1}"
+    local script
 
+    script="${1}"
     if [ -z ${script} ];
     then
         script="${SCRIPT}"
     fi
 
-    local memory=''
+    local memory
+
+    memory=''
     if [ ! -z "${PHP_MEMORY_LIMIT}" ];
     then
         memory="${PHP_MEMORY_LIMIT}"
     fi
 
-    local namespace=''
+    local namespace
+
+    namespace=''
     if [ ! -z "${NAMESPACE}" ];
     then
         namespace="${NAMESPACE}-"
@@ -1057,10 +1062,13 @@ function run_php_script() {
         echo 'About to run container in namespace '"${NAMESPACE}"
     fi
 
-    local suffix='-'"${namespace}""$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32 2>> /dev/null)"
+    local suffix
+    suffix='-'"${namespace}""$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32 2>> /dev/null)"
 
     export SUFFIX="${suffix}"
-    local symfony_environment="$(get_symfony_environment)"
+
+    local symfony_environment
+    symfony_environment="$(get_symfony_environment)"
 
     local network=`get_network_option`
     local command=$(echo -n 'docker run --rm '"${network}"'\
@@ -1068,7 +1076,7 @@ function run_php_script() {
     -v '`pwd`'/provisioning/containers/php/templates/20-no-xdebug.ini.dist:/usr/local/etc/php/conf.d/20-xdebug.ini \
     -v '`pwd`':/var/www/devobs \
     --name='"$(get_container_name_for "php")${suffix}"' \
-    '"$(get_image_name_for "php")${memory}"' php /var/www/devobs/'"${script}")
+    '"$(get_php_docker_image_name)"' php /var/www/devobs/'"${script}")
 
     echo 'About to execute "'"${command}"'"'
 
