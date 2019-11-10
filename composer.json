@@ -46,7 +46,7 @@
         "sensio/distribution-bundle": "^5.0@dev",
         "sensio/framework-extra-bundle": "5.*",
         "symfony/monolog-bundle": "^3.1.0",
-        "symfony/symfony": "v3.4.19",
+        "symfony/symfony": "3.4.*",
         "themattharris/tmhoauth": "dev-master",
         "twig/extensions": "1.0.*"
     },
