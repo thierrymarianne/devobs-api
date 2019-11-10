@@ -29,7 +29,7 @@
         "ext-mysql": "*",
         "ext-pdo": "*",
         "auth0/auth0-php": "~5.0",
-        "beberlei/DoctrineExtensions": "dev-master",
+        "beberlei/doctrineextensions": "dev-master",
         "doctrine/doctrine-bundle": "~1.4",
         "doctrine/doctrine-fixtures-bundle": "*",
         "doctrine/doctrine-migrations-bundle": "v2.0.0-beta1",
@@ -47,7 +47,7 @@
         "sensio/framework-extra-bundle": "5.*",
         "symfony/monolog-bundle": "^3.1.0",
         "symfony/symfony": "v3.4.19",
-        "themattharris/tmhOAuth": "dev-master",
+        "themattharris/tmhoauth": "dev-master",
         "twig/extensions": "1.0.*"
     },
     "require-dev": {
