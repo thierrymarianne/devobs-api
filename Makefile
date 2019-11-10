@@ -70,8 +70,8 @@ run-php-script: ## Run PHP script
 install-php-dependencies: ## Install PHP dependencies
 		@/bin/bash -c 'source ./bin/console.sh && install_php_dependencies'
 
-require-php-dependency: ## Require a PHP dependency
-		@/bin/bash -c 'source ./bin/console.sh && require_php_dependency "${VENDOR_NAME}"'
+add-php-dependency: ## Require a PHP dependency
+		@/bin/bash -c 'source ./bin/console.sh && add_php_dependency "${VENDOR_NAME}"'
 
 remove-php-dependency: ## Remove a PHP dependency
 		@/bin/bash -c 'source ./bin/console.sh && remove_php_dependency "${VENDOR_NAME}"'

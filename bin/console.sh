@@ -3,7 +3,7 @@
 # 2019-11-10 - Notes about dependencies addition or removal
 #
 # ```
-# export VENDOR_NAME='symfony/symfony:^3.4.x' && make require-php-dependency
+# export VENDOR_NAME='symfony/symfony:^3.4.x' && make add-php-dependency
 # export VENDOR_NAME='symfony/symfony' && make remove-php-dependency
 # ```
 #
@@ -533,7 +533,7 @@ function install_php_dependencies {
     echo ${command} | make run-php
 }
 
-function require_php_dependency {
+function add_php_dependency {
     local dependency
     dependency="${1}"
 
@@ -576,7 +576,7 @@ function require_php_dependency {
     local command=$(echo -n '/bin/bash -c "cd '"${project_dir}"' &&
     source '"${project_dir}"'/bin/install-composer.sh &&
     php '"${project_dir}"'/composer.phar config -g github-oauth.github.com '"${GITHUB_OAUTH_TOKEN}"' &&
-    php '"${project_dir}"'/composer.phar -vvv req '"'"''"${dependency}""'"'"')
+    php '"${project_dir}"'/composer.phar -vvv req --no-update '"'"''"${dependency}""'"'"')
 
     echo "${command}" | make run-php
 }

@@ -34,7 +34,7 @@ make install-php-dependencies
 Require a PHP vendor
 
 ```
-export VENDOR_NAME='symfony/symfony:^3.4.x' && make require-php-dependency
+export VENDOR_NAME='symfony/symfony:^3.4.x' && make add-php-dependency
 ```
 
 Remove a PHP vendor
