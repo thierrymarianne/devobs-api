@@ -13,7 +13,7 @@ interface TwitterMemberInterface extends MemberInterface
      * @param string $twitterId
      * @return TwitterMemberInterface
      */
-    public function setTwitterID(string $twitterId): self;
+    public function setTwitterID(string $twitterId): MemberInterface;
 
     /**
      * @return bool
@@ -24,7 +24,7 @@ interface TwitterMemberInterface extends MemberInterface
      * @param $twitterUsername
      * @return TwitterMemberInterface
      */
-    public function setTwitterUsername(string $twitterUsername): self;
+    public function setTwitterUsername(string $twitterUsername): MemberInterface;
 
     /**
      * @return string
