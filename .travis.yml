@@ -9,6 +9,7 @@ language: php
 
 php:
     - '7.3'
+
 addons:
     apt:
         packages:
@@ -17,11 +18,10 @@ services:
     - mysql
     - redis-server
 
-before_script:
-    - phpenv config-rm xdebug.ini
-
 before_install:
+    - phpenv config-rm xdebug.ini
     - mysql -e 'CREATE DATABASE test;'
+
 install:
     - cp provisioning/continuous-integration/parameters_test.yml.dist app/config/parameters_test.yml
     - /bin/bash -c 'cp app/config/parameters.yml{.dist,}'
@@ -31,8 +31,10 @@ install:
     - php composer.phar run-script build-bootstrap
     - php ./bin/security-checker security:check
     - php app/console doctrine:schema:create -n -e test
+
 script:
     - make run-php-unit-tests
+
 cache:
     directories:
         - $HOME/.composer
