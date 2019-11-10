@@ -1409,8 +1409,7 @@ function follow_today_statuses() {
     tail -f app/logs/dev.log | awk '{$1=$2=$3="";print $0}' | sed -e 's/^\s\+//' | grep `date -I` | awk '{$1=$2="";print $0}'
 }
 
-function schedule_network_discovery {
-    export NAMESPACE="schedule_network_discovery"
+function start_discovering_network {
     before_running_command
 
     if [ -z "${MEMBER_NAME}" ];
