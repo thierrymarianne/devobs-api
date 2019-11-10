@@ -8,6 +8,7 @@ use App\Member\Entity\NotFoundMember;
 use App\Member\Entity\ProtectedMember;
 use App\Member\Entity\SuspendedMember;
 use App\Member\MemberInterface;
+use App\Member\TwitterMemberInterface;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\OptimisticLockException;
@@ -217,6 +218,8 @@ class NetworkRepository
         callable $doing,
         string $memberId
     ) {
+        $member = null;
+
         try {
             $existingMember = $doing($memberId);
         } catch (NotFoundMemberException $exception) {
@@ -267,8 +270,11 @@ class NetworkRepository
             }
 
             if ($existingMember instanceof MemberInterface) {
-                if ($existingMember->getTwitterID() !== $member->getTwitterID() &&
-                    $member->getTwitterID() !== null) {
+                if (
+                    $member instanceof TwitterMemberInterface &&
+                    $member->hasTwitterId() &&
+                    ($existingMember->getTwitterID() !== $member->getTwitterID())
+                ) {
                     $existingMember->setTwitterID($member->getTwitterID());
 
                     return $this->memberRepository->saveMember($existingMember);
