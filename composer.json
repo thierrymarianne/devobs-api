@@ -24,10 +24,10 @@
     ],
     "require": {
         "php": "7.3.11",
+        "ext-bcmath": "*",
         "ext-curl": "*",
         "ext-json": "*",
-        "ext-mysql": "*",
-        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
         "auth0/auth0-php": "~5.0",
         "beberlei/doctrineextensions": "dev-master",
         "doctrine/doctrine-bundle": "~1.4",
