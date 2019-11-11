@@ -8,7 +8,7 @@ RUN apt-get update && apt install -y git apt-utils gnupg2 wget unzip libcurl4-gn
     apt-get update && \
     cd /tmp && \
     # Install PHP extensions (bcmath, blackfire, mysql, pcntl, sockets, xdebug)
-    docker-php-ext-install bcmath mysqli pcntl pdo_mysql && \
+    docker-php-ext-install bcmath mysqli mysql pcntl pdo pdo_mysql && \
     apt -y install blackfire-agent blackfire-agent blackfire-php && \
     docker-php-ext-install sockets && \
     wget https://github.com/xdebug/xdebug/archive/2.7.2.zip && \
