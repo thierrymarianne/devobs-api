@@ -589,8 +589,9 @@ function add_php_dependency {
     local project_dir="$(get_project_dir)"
     local command=$(echo -n '/bin/bash -c "cd '"${project_dir}"' &&
     source '"${project_dir}"'/bin/install-composer.sh &&
+    php -v &&
     php '"${project_dir}"'/composer.phar config -g github-oauth.github.com '"${GITHUB_OAUTH_TOKEN}"' &&
-    php '"${project_dir}"'/composer.phar -vvv req --no-update '"'"''"${dependency}""'"'"')
+    php '"${project_dir}"'/composer.phar -vvv req '"'"''"${dependency}""'"'"')
 
     echo "${command}" | make run-php
 }
