@@ -497,11 +497,8 @@ function check_security_of_php_dependencies() {
   local project_dir
   project_dir='/var/www/devobs'
 
-  local php_docker_image_name
-  php_docker_image_name=$(get_php_docker_image_name)
-
   local command
-  command="${php_docker_image_name} /bin/sh -c 'cd "${project_dir}" && "
+  command="/bin/sh -c 'cd "${project_dir}" && "
   command="${command}"'php ./bin/security-checker security:check'"'"
   echo "${command}" | make run-php
 }
