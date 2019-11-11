@@ -588,7 +588,7 @@ function add_php_dependency {
     source '"${project_dir}"'/bin/install-composer.sh &&
     php -v &&
     php '"${project_dir}"'/composer.phar config -g github-oauth.github.com '"${GITHUB_OAUTH_TOKEN}"' &&
-    php '"${project_dir}"'/composer.phar -vvv req '"'"''"${dependency}""'"'"')
+    COMPOSER_MEMORY_LIMIT=8G php '"${project_dir}"'/composer.phar -vvv req '"'"''"${dependency}""'"'"')
 
     echo "${command}" | make run-php
 }
