@@ -1204,9 +1204,10 @@ function run_php() {
 
     local network=`get_network_option`
 
+    # @see https://github.com/kubernetes/kubernetes/issues/54384#issue-267572944
     local command=$(echo -n 'docker run '"${network}"'\
     -e '"${symfony_environment}" '\
-    --memory=1G \
+    --memory=8G \
     -v '`pwd`'/provisioning/containers/php/templates/20-no-xdebug.ini.dist:/usr/local/etc/php/conf.d/20-xdebug.ini \
     -v '`pwd`'/provisioning/volumes/php/composer:/root/.composer \
     -v '`pwd`':/var/www/devobs \
