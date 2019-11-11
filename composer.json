@@ -1,5 +1,6 @@
 {
-    "name": "weaving-the-web/experiments",
+    "name": "weaving-the-web/devobs-api",
+    "license": "MIT",
     "description": "Driving experiments for fun's sake",
     "autoload": {
         "psr-4": {
@@ -22,8 +23,7 @@
         }
     ],
     "require": {
-        "php": "7.3.10",
-        "ext-bc": "*",
+        "php": "7.3.11",
         "ext-curl": "*",
         "ext-json": "*",
         "ext-mysql": "*",
@@ -46,7 +46,7 @@
         "sensio/distribution-bundle": "^5.0@dev",
         "sensio/framework-extra-bundle": "5.*",
         "symfony/monolog-bundle": "^3.1.0",
-        "symfony/symfony": "3.4.*",
+        "symfony/symfony": "3.4.33",
         "themattharris/tmhoauth": "dev-master",
         "twig/extensions": "1.0.*"
     },
@@ -74,7 +74,7 @@
     "config": {
         "bin-dir": "bin",
         "platform": {
-            "php": "7.3.10"
+            "php": "7.3.11"
         },
         "sort-packages": true
     },
