@@ -515,6 +515,14 @@ function clear_backend_application_cache() {
 }
 
 function install_php_dependencies {
+    if [ -z "${GITHUB_OAUTH_TOKEN}" ];
+    then
+        echo 'Please export a GitHub OAuth token as an environment variable e.g.'
+        echo 'export GITHUB_OAUTH_TOKEN="tok"'
+
+        return 1
+    fi
+
     # Ensure dependency is available
     # to prevent failure when caching configuration parameters
     run_rabbitmq_container
@@ -529,7 +537,13 @@ function install_php_dependencies {
     local project_dir="$(get_project_dir)"
     local command=$(echo -n '/bin/bash -c "cd '"${project_dir}"' &&
     source '"${project_dir}"'/bin/install-composer.sh &&
-    php '"${project_dir}"'/composer.phar install --prefer-dist"')
+    php -v &&
+    php '"${project_dir}"'/composer.phar config -g github-oauth.github.com '"${GITHUB_OAUTH_TOKEN}"' &&
+    COMPOSER_MEMORY_LIMIT=8G php '"${project_dir}"'/composer.phar install
+    --no-scripts
+    --prefer-dist
+    --no-suggest
+    --no-plugins -vvv"')
     echo ${command} | make run-php
 }
 
