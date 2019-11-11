@@ -22,32 +22,10 @@ interface MemberInterface extends UserInterface
     public function getUsername();
 
     /**
-     * @param string $twitterId
-     * @return MemberInterface
-     */
-    public function setTwitterID(string $twitterId): self;
-
-    /**
-     * @param $twitterUsername
-     * @return $this
-     */
-    public function setTwitterUsername(string $twitterUsername): self;
-
-    /**
-     * @return string
-     */
-    public function getTwitterUsername(): string;
-
-    /**
-     * @return string
-     */
-    public function getTwitterID(): ?string;
-
-    /**
      * @param string $fullName
      * @return MemberInterface
      */
-    public function setFullName(string $fullName): self;
+    public function setFullName(string $fullName): MemberInterface;
 
     /**
      * @return string
@@ -58,7 +36,7 @@ interface MemberInterface extends UserInterface
      * @param bool $protected
      * @return MemberInterface
      */
-    public function setProtected(bool $protected): self;
+    public function setProtected(bool $protected): MemberInterface;
 
     /**
      * @return boolean
@@ -74,7 +52,7 @@ interface MemberInterface extends UserInterface
      * @param bool $suspended
      * @return MemberInterface
      */
-    public function setSuspended(bool $suspended): self;
+    public function setSuspended(bool $suspended): MemberInterface;
 
     /**
      * @return bool
@@ -90,7 +68,7 @@ interface MemberInterface extends UserInterface
      * @param $notFound
      * @return MemberInterface
      */
-    public function setNotFound(bool $notFound): self;
+    public function setNotFound(bool $notFound): MemberInterface;
 
     /**
      * @return boolean

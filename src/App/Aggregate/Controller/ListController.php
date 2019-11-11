@@ -6,7 +6,6 @@ use App\Aggregate\Controller\Exception\InvalidRequestException;
 use App\Aggregate\Repository\TimelyStatusRepository;
 use App\Cache\RedisCache;
 use App\Http\SearchParams;
-use App\Member\MemberInterface;
 use App\Member\Repository\AuthenticationTokenRepository;
 use App\RequestValidation\RequestParametersValidationTrait;
 use App\Security\AuthenticationTokenValidationTrait;
@@ -14,7 +13,10 @@ use App\Security\Cors\CorsHeadersAwareTrait;
 use App\Security\Exception\UnauthorizedRequestException;
 use App\Security\HttpAuthenticator;
 use App\Status\Repository\HighlightRepository;
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\ServiceAccount;
 use OldSound\RabbitMqBundle\RabbitMq\Producer;
 use Predis\Client;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,10 +25,7 @@ use Symfony\Component\Routing\RouterInterface;
 use WeavingTheWeb\Bundle\ApiBundle\Entity\Aggregate;
 use WeavingTheWeb\Bundle\ApiBundle\Entity\Token;
 use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
-use WeavingTheWeb\Bundle\ApiBundle\Repository\TokenRepository;
 use WTW\UserBundle\Repository\UserRepository;
-use Kreait\Firebase\Factory;
-use Kreait\Firebase\ServiceAccount;
 
 class ListController
 {
@@ -106,7 +105,7 @@ class ListController
     /**
      * @param Request $request
      * @return JsonResponse
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function getAggregates(Request $request)
     {
@@ -124,7 +123,7 @@ class ListController
                     $totalPages = null;
                 }
 
-                if (is_null($totalPages)) {
+                if ($totalPages === null) {
                     $totalPages = $this->aggregateRepository->countTotalPages($searchParams);
                     $client->set($key, $totalPages);
                 }
@@ -151,7 +150,7 @@ class ListController
                     $aggregates = null;
                 }
 
-                if (is_null($aggregates)) {
+                if ($aggregates === null) {
                     $aggregates = json_encode($this->aggregateRepository->findAggregates($searchParams));
                     $client->set($key, $aggregates);
                 }
@@ -195,7 +194,7 @@ class ListController
     /**
      * @param Request $request
      * @return JsonResponse
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function getHighlights(Request $request)
     {
@@ -267,7 +266,7 @@ class ListController
     /**
      * @param $searchParams
      * @return array|mixed
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     private function getHighlightsFromSearchParams(SearchParams $searchParams) {
         if ($this->invalidHighlightsSearchParams($searchParams)) {
@@ -304,7 +303,7 @@ class ListController
      * @param              $snapshot
      * @param              $client
      * @return array
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     private function getHighlightsFromFirebaseSnapshot(SearchParams $searchParams, $snapshot, Client $client): array
     {
@@ -347,7 +346,7 @@ class ListController
                 'name' => $searchParams->getParams()['aggregate']
             ]);
         }
-        if (is_null($aggregateId)) {
+        if ($aggregateId === null) {
             $aggregateId = 1;
         }
 
@@ -447,7 +446,7 @@ class ListController
      * @param Request $request
      * @return int|null|JsonResponse
      * @throws NonUniqueResultException
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function getMembers(Request $request)
     {
@@ -464,7 +463,7 @@ class ListController
                     $totalPages = null;
                 }
 
-                if (is_null($totalPages)) {
+                if ($totalPages === null) {
                     $totalPages = $this->memberRepository->countTotalPages($searchParams);
                     $client->set($key, $totalPages);
                 }
@@ -494,7 +493,7 @@ class ListController
                     $members = null;
                 }
 
-                if (is_null($members)) {
+                if ($members === null) {
                     $members = json_encode($this->memberRepository->findMembers($searchParams));
                     $client->set($key, $members);
                 }
@@ -508,7 +507,7 @@ class ListController
     /**
      * @param Request $request
      * @return JsonResponse
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function getStatuses(Request $request)
     {
@@ -530,7 +529,7 @@ class ListController
      * @param callable $finder
      * @param array    $params
      * @return JsonResponse
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     private function getCollection(
         Request $request,

@@ -58,6 +58,9 @@ list-php-extensions: ## List PHP extensions
 remove-php-container: ## Remove PHP container
 		@/bin/bash -c 'source ./bin/console.sh && remove_php_container'
 
+check-security-of-php-dependencies: ## Check security of PHP dependencies
+		@/bin/bash -c 'source ./bin/console.sh && check_security_of_php_dependencies'
+
 clear-backend-application-cache: ## Clear backend application (API) cache
 		@/bin/bash -c 'source ./bin/console.sh && clear_backend_application_cache'
 
@@ -66,6 +69,12 @@ run-php-script: ## Run PHP script
 
 install-php-dependencies: ## Install PHP dependencies
 		@/bin/bash -c 'source ./bin/console.sh && install_php_dependencies'
+
+add-php-dependency: ## Require a PHP dependency
+		@/bin/bash -c 'source ./bin/console.sh && add_php_dependency "${VENDOR_NAME}"'
+
+remove-php-dependency: ## Remove a PHP dependency
+		@/bin/bash -c 'source ./bin/console.sh && remove_php_dependency "${VENDOR_NAME}"'
 
 run-php: ## Run PHP with arguments
 		@/bin/bash -c 'source ./bin/console.sh && run_php'
@@ -146,10 +155,10 @@ keep-php-container-running: ## Keep a running container having PHP
 		@/bin/bash -c 'source ./bin/console.sh && keep_php_container_running'
 
 consume-twitter-api-messages: ## Consume twitter API messages
-		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source bin/consume_twitter_api.sh'
+		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source ./bin/consume_twitter_api.sh'
 
 consume-twitter-api-news-messages: ## Consume twitter API news messages
-		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source bin/consume_twitter_api_for_news.sh'
+		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source ./bin/consume_twitter_api_for_news.sh'
 
 today-statuses: ## Filter the statuses for today from the log file
 		@/bin/bash -c 'source ./bin/console.sh && today_statuses'
@@ -159,3 +168,6 @@ follow-today-statuses: ## Filter the statuses for today from the log file
 
 run-php-unit-tests: ## Run unit tests with PHPUnit
 		@/bin/bash -c 'source ./bin/console.sh && run_php_unit_tests'
+
+start-discovering-network: ## Start discovering a network attending a microblogging platform
+		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && source ./bin/console.sh && start_discovering_network'

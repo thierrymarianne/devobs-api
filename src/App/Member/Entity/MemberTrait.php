@@ -70,15 +70,6 @@ trait MemberTrait
     }
 
     /**
-     * @param string $twitterId
-     * @return MemberInterface
-     */
-    public function setTwitterID(string $twitterId): MemberInterface
-    {
-        return $this;
-    }
-
-    /**
      * @param $twitterUsername
      * @return $this
      */
@@ -101,6 +92,23 @@ trait MemberTrait
     public function getTwitterID(): ?string
     {
         return '';
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasTwitterId(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @param string $twitterId
+     * @return MemberInterface
+     */
+    public function setTwitterID(string $twitterId): MemberInterface
+    {
+        return $this;
     }
 
     /**

@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class SearchParams
 {
-    const PARAM_AGGREGATE_IDS = 'aggregateIds';
+    public const PARAM_AGGREGATE_IDS = 'aggregateIds';
 
     /**
      * @var PaginationParams
@@ -76,7 +76,6 @@ class SearchParams
                 if ($params[$name] == 'datetime') {
                     $filteredParams[$name] = new \DateTime($value, new \DateTimeZone('Europe/Paris'));
                 }
-
 
                 if ($params[$name] == 'array') {
                     $filteredParams[$name] = $value;

@@ -11,6 +11,9 @@ use App\Operation\OperationClock;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 
 use PhpAmqpLib\Message\AmqpMessage;
@@ -21,6 +24,7 @@ use WeavingTheWeb\Bundle\ApiBundle\Entity\Status;
 use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
 use WeavingTheWeb\Bundle\ApiBundle\Repository\StatusRepository;
 use WeavingTheWeb\Bundle\TwitterBundle\Exception\NotFoundMemberException;
+use WeavingTheWeb\Bundle\TwitterBundle\Exception\SuspendedAccountException;
 use WeavingTheWeb\Bundle\TwitterBundle\Exception\UnavailableResourceException;
 use WTW\UserBundle\Entity\User;
 
@@ -87,8 +91,8 @@ class ConversationStatusConsumer implements ConsumerInterface
      * @param AmqpMessage $message
      * @return bool|mixed
      * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws NonUniqueResultException
+     * @throws OptimisticLockException
      * @throws \Exception
      */
     public function execute(AmqpMessage $message)
@@ -187,11 +191,13 @@ class ConversationStatusConsumer implements ConsumerInterface
     /**
      * @param $notFoundMemberException
      * @param $options
+     *
      * @return array
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \WeavingTheWeb\Bundle\TwitterBundle\Exception\SuspendedAccountException
-     * @throws \WeavingTheWeb\Bundle\TwitterBundle\Exception\UnavailableResourceException
+     * @throws UnavailableResourceException
+     * @throws NonUniqueResultException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws SuspendedAccountException
      */
     private function handleMemberNotFoundException($notFoundMemberException, $options): array
     {
@@ -233,9 +239,9 @@ class ConversationStatusConsumer implements ConsumerInterface
     /**
      * @param Status $status
      * @return User
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \WeavingTheWeb\Bundle\TwitterBundle\Exception\SuspendedAccountException
+     * @throws NonUniqueResultException
+     * @throws OptimisticLockException
+     * @throws SuspendedAccountException
      * @throws \WeavingTheWeb\Bundle\TwitterBundle\Exception\UnavailableResourceException
      */
     private function ensureStatusAuthorExists(Status $status): User

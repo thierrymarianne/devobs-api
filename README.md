@@ -25,6 +25,24 @@ Build a PHP container image
 make build-php-container
 ```
 
+Intall all PHP vendors
+
+```
+make install-php-dependencies
+```
+
+Require a PHP vendor
+
+```
+export VENDOR_NAME='symfony/symfony:^3.4.x' && make add-php-dependency
+```
+
+Remove a PHP vendor
+
+```
+export VENDOR_NAME='symfony/symfony' && make remove-php-dependency
+```
+
 ### MySQL
 
 Initialize MySQL from `app/config/parameters.yml`
@@ -85,6 +103,12 @@ Produce messages from lists of members
 
 ```
 make produce-amqp-messages-from-members-lists
+```
+
+Start discovering a network
+
+```
+export MEMBER_NAME="DrEugeniaCheng" && make start-discovering-network
 ```
 
 Consume Twitter API from messages

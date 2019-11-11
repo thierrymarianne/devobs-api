@@ -2,13 +2,13 @@ FROM php:7.3.10-cli-stretch
 
 # Update package lists for upgrades
 # @see https://askubuntu.com/a/222352/172316
-RUN apt-get update && apt install -y apt-utils gnupg2 wget unzip libcurl4-gnutls-dev && \
+RUN apt-get update && apt install -y git apt-utils gnupg2 wget unzip libcurl4-gnutls-dev && \
     /bin/bash -c "wget -q -O - https://packages.blackfire.io/gpg.key | apt-key add -" && \
     echo "deb http://packages.blackfire.io/debian any main" | tee /etc/apt/sources.list.d/blackfire.list && \
     apt-get update && \
     cd /tmp && \
     # Install PHP extensions (bcmath, blackfire, mysql, pcntl, sockets, xdebug)
-    docker-php-ext-install bcmath mysqli pcntl pdo_mysql && \
+    docker-php-ext-install bcmath mysqli mysql pcntl pdo pdo_mysql && \
     apt -y install blackfire-agent blackfire-agent blackfire-php && \
     docker-php-ext-install sockets && \
     wget https://github.com/xdebug/xdebug/archive/2.7.2.zip && \

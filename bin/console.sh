@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# 2019-11-10 - Notes about dependencies addition or removal
+#
+# ```
+# export VENDOR_NAME='symfony/symfony:^3.4.x' && make add-php-dependency
+# export VENDOR_NAME='symfony/symfony' && make remove-php-dependency
+# ```
+#
 # 2019-10-19 - Notes about clearing application cache
 #
 # ```
@@ -238,20 +245,22 @@ function consume_amqp_messages_for_news_status {
 }
 
 function purge_queues() {
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-user-status -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-conversation-status -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-aggregates-status -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-aggregates-likes -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-news-status -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-network -p /weaving_the_web
-    docker exec -ti rabbitmq rabbitmqctl purge_queue get-timely-status -p /weaving_the_web
+    local container_name
+    container_name="$(get_container_name_for "rabbitmq")"
+
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-user-status -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-conversation-status -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-aggregates-status -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-aggregates-likes -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-news-status -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-network -p /weaving_the_web
+    docker exec -ti "${container_name}" rabbitmqctl purge_queue get-timely-status -p /weaving_the_web
 }
 
 function execute_command () {
     local output_log="${1}"
     local error_log="${2}"
 
-    cd "${PROJECT_DIR}"
     make run-php-script >> "${output_log}" 2>> "${error_log}"
 
     if [ ! -z "${VERBOSE}" ];
@@ -464,13 +473,34 @@ function migrate_schema {
 }
 
 function is_rabbitmq_not_ready {
-  if [ "$(docker logs rabbitmq | grep -c 'startup complete')" -eq 0 ];
+  local container_expected_to_be_ready
+  container_expected_to_be_ready="$(get_container_name_for "rabbitmq")"
+
+  if [ "$(docker logs "${container_expected_to_be_ready}" | grep -c 'startup complete')" -eq 0 ];
   then
     echo 0
     return 1
   fi
 
   echo 1
+}
+
+function get_php_docker_image_name() {
+    local docker_image_name
+    docker_image_name="$(get_image_name_for "php")${memory}"
+    echo '=> About to run container from docker image "'"${docker_image_name}"'"' 1>&2
+
+    echo "${docker_image_name}"
+}
+
+function check_security_of_php_dependencies() {
+  local project_dir
+  project_dir='/var/www/devobs'
+
+  local command
+  command="/bin/sh -c 'cd "${project_dir}" && "
+  command="${command}"'php ./bin/security-checker security:check'"'"
+  echo "${command}" | make run-php
 }
 
 function clear_backend_application_cache() {
@@ -482,6 +512,14 @@ function clear_backend_application_cache() {
 }
 
 function install_php_dependencies {
+    if [ -z "${GITHUB_OAUTH_TOKEN}" ];
+    then
+        echo 'Please export a GitHub OAuth token as an environment variable e.g.'
+        echo 'export GITHUB_OAUTH_TOKEN="tok"'
+
+        return 1
+    fi
+
     # Ensure dependency is available
     # to prevent failure when caching configuration parameters
     run_rabbitmq_container
@@ -494,10 +532,113 @@ function install_php_dependencies {
     done
 
     local project_dir="$(get_project_dir)"
-    local command=$(echo -n 'php /bin/bash -c "cd '"${project_dir}"' &&
+    local command=$(echo -n '/bin/bash -c "cd '"${project_dir}"' &&
     source '"${project_dir}"'/bin/install-composer.sh &&
-    php '"${project_dir}"'/composer.phar install --prefer-dist"')
+    php -v &&
+    php '"${project_dir}"'/composer.phar config -g github-oauth.github.com '"${GITHUB_OAUTH_TOKEN}"' &&
+    COMPOSER_MEMORY_LIMIT=8G php '"${project_dir}"'/composer.phar install
+    --no-scripts
+    --prefer-dist
+    --no-suggest
+    --no-plugins -vvv"')
     echo ${command} | make run-php
+}
+
+function add_php_dependency {
+    local dependency
+    dependency="${1}"
+
+    if [ -z "${GITHUB_OAUTH_TOKEN}" ];
+    then
+        echo 'Please export a GitHub OAuth token as an environment variable e.g.'
+        echo 'export GITHUB_OAUTH_TOKEN="tok"'
+
+        return 1
+    fi
+
+    if [ -z "${VENDOR_NAME}" ] && [ -z "${dependency}" ];
+    then
+        echo 'Please export a vendor name as an environment variable e.g.'
+        echo 'export VENDOR_NAME="symfony/symfony:^3.x"'
+
+        return 1
+    fi
+
+    if [ -z "${dependency}" ];
+    then
+      echo 'Please pass a non-empty vendor name as first argument e.g.'
+      echo '"symfony/symfony:^3.x"'
+
+      return 1
+    fi
+
+    # Ensure dependency is available
+    # to prevent failure when caching configuration parameters
+    run_rabbitmq_container
+
+    # Wait for RabbitMQ startup to be complete
+    while [ `is_rabbitmq_not_ready` -eq 0 ];
+    do
+        sleep 1
+        echo 'Waiting for RabbitMQ to be ready...'
+    done
+
+    local project_dir="$(get_project_dir)"
+    local command=$(echo -n '/bin/bash -c "cd '"${project_dir}"' &&
+    source '"${project_dir}"'/bin/install-composer.sh &&
+    php -v &&
+    php '"${project_dir}"'/composer.phar config -g github-oauth.github.com '"${GITHUB_OAUTH_TOKEN}"' &&
+    COMPOSER_MEMORY_LIMIT=8G php '"${project_dir}"'/composer.phar -vvv req '"'"''"${dependency}""'"'"')
+
+    echo "${command}" | make run-php
+}
+
+function remove_php_dependency {
+    local dependency
+    dependency="${1}"
+
+    if [ -z "${GITHUB_OAUTH_TOKEN}" ];
+    then
+        echo 'Please export a GitHub OAuth token as an environment variable e.g.'
+        echo 'export GITHUB_OAUTH_TOKEN="tok"'
+
+        return 1
+    fi
+
+    if [ -z "${VENDOR_NAME}" ] && [ -z "${dependency}" ];
+    then
+        echo 'Please export a vendor name as environment variable e.g.'
+        echo 'export VENDOR_NAME="symfony/symfony:^3.x"'
+
+        return 1
+    fi
+
+    if [ -z "${dependency}" ];
+    then
+      echo 'Please pass a non-empty vendor name as first argument e.g.'
+      echo '"symfony/symfony:^3.x"'
+
+      return 1
+    fi
+
+    # Ensure dependency is available
+    # to prevent failure when caching configuration parameters
+    run_rabbitmq_container
+
+    # Wait for RabbitMQ startup to be complete
+    while [ `is_rabbitmq_not_ready` -eq 0 ];
+    do
+        sleep 1
+        echo 'Waiting for RabbitMQ to be ready...'
+    done
+
+    local project_dir="$(get_project_dir)"
+    local command=$(echo -n '/bin/bash -c "cd '"${project_dir}"' &&
+    source '"${project_dir}"'/bin/install-composer.sh &&
+    php '"${project_dir}"'/composer.phar config -g github-oauth.github.com '"${GITHUB_OAUTH_TOKEN}"' &&
+    php '"${project_dir}"'/composer.phar remove --no-update '"'"''"${dependency}""'"'"')
+
+    echo "${command}" | make run-php
 }
 
 function get_gateway() {
@@ -1013,20 +1154,25 @@ function remove_php_fpm_container {
 }
 
 function run_php_script() {
-    local script="${1}"
+    local script
 
+    script="${1}"
     if [ -z ${script} ];
     then
         script="${SCRIPT}"
     fi
 
-    local memory=''
+    local memory
+
+    memory=''
     if [ ! -z "${PHP_MEMORY_LIMIT}" ];
     then
         memory="${PHP_MEMORY_LIMIT}"
     fi
 
-    local namespace=''
+    local namespace
+
+    namespace=''
     if [ ! -z "${NAMESPACE}" ];
     then
         namespace="${NAMESPACE}-"
@@ -1034,18 +1180,21 @@ function run_php_script() {
         echo 'About to run container in namespace '"${NAMESPACE}"
     fi
 
-    local suffix='-'"${namespace}""$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32 2>> /dev/null)"
+    local suffix
+    suffix='-'"${namespace}""$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32 2>> /dev/null)"
 
     export SUFFIX="${suffix}"
-    local symfony_environment="$(get_symfony_environment)"
+
+    local symfony_environment
+    symfony_environment="$(get_symfony_environment)"
 
     local network=`get_network_option`
-    local command=$(echo -n 'docker run '"${network}"'\
+    local command=$(echo -n 'docker run --rm '"${network}"'\
     -e '"${symfony_environment}"' \
     -v '`pwd`'/provisioning/containers/php/templates/20-no-xdebug.ini.dist:/usr/local/etc/php/conf.d/20-xdebug.ini \
     -v '`pwd`':/var/www/devobs \
     --name='"$(get_container_name_for "php")${suffix}"' \
-    '"$(get_image_name_for "php")${memory}"' /var/www/devobs/'"${script}")
+    '"$(get_php_docker_image_name)"' php /var/www/devobs/'"${script}")
 
     echo 'About to execute "'"${command}"'"'
 
@@ -1067,11 +1216,16 @@ function run_php() {
 
     local network=`get_network_option`
 
+    # @see https://github.com/kubernetes/kubernetes/issues/54384#issue-267572944
     local command=$(echo -n 'docker run '"${network}"'\
     -e '"${symfony_environment}" '\
+    --memory=8G \
     -v '`pwd`'/provisioning/containers/php/templates/20-no-xdebug.ini.dist:/usr/local/etc/php/conf.d/20-xdebug.ini \
+    -v '`pwd`'/provisioning/volumes/php/composer:/root/.composer \
     -v '`pwd`':/var/www/devobs \
-    --name='"$(get_container_name_for "php")${suffix}"' '"${arguments}")
+    --name='"$(get_container_name_for "php")${suffix}"' \
+    '"$(get_php_docker_image_name)"' \
+    '"${arguments}")
 
     echo 'About to execute '"${command}"
 
@@ -1086,7 +1240,11 @@ function ensure_log_files_exist() {
     local standard_output_file="${1}"
     local standard_error_file="${2}"
 
-    cd "${PROJECT_DIR}"
+    if [ ! -e ./composer.lock ];
+    then
+      echo 'Inconsistent file system location prevents executing the next commands'
+      return 1
+    fi
 
     if [ ! -e "${standard_output_file}" ];
     then
@@ -1162,11 +1320,12 @@ function produce_amqp_messages_for_timely_statuses {
 
 function produce_amqp_messages_from_member_timeline {
     export NAMESPACE="produce_messages_from_member_timeline"
-
     before_running_command
+
     if [ -z "${username}" ];
     then
-        echo 'Please export a valid username: export username="bob"'
+        echo 'Please export a valid username:'
+        echo 'export username="rasmus"'
 
         return
     fi
@@ -1186,14 +1345,34 @@ function before_running_command() {
 }
 
 function run_command {
-    local php_command=${1}
-    local memory_limit=${2}
+    local php_command
+    php_command=${1}
 
-    local rabbitmq_output_log="app/logs/rabbitmq."${NAMESPACE}".out.log"
-    local rabbitmq_error_log="app/logs/rabbitmq."${NAMESPACE}".error.log"
-    ensure_log_files_exist "${rabbitmq_output_log}" "${rabbitmq_error_log}"
-    rabbitmq_output_log="${PROJECT_DIR}/${rabbitmq_output_log}"
-    rabbitmq_error_log="${PROJECT_DIR}/${rabbitmq_error_log}"
+    local memory_limit
+    memory_limit=${2}
+
+    local output_log
+    output_log="app/logs/worker.out.log"
+
+    local error_log
+    error_log="app/logs/worker.error.log"
+
+    if [ ! -z "${NAMESPACE}" ];
+    then
+      output_log="app/logs/rabbitmq."${NAMESPACE}".out.log"
+      error_log="app/logs/rabbitmq."${NAMESPACE}".error.log"
+    fi
+
+    ensure_log_files_exist "${output_log}" "${error_log}"
+
+    output_log="./${output_log}"
+    error_log="./${error_log}"
+
+    if [ -z "${DOCKER_MODE}" ];
+    then
+      output_log="${PROJECT_DIR}/${output_log}"
+      error_log="${PROJECT_DIR}/${error_log}"
+    fi
 
     local symfony_environment="$(get_symfony_environment)"
 
@@ -1201,9 +1380,19 @@ function run_command {
     then
         command="${symfony_environment} /usr/bin/php $PROJECT_DIR/${php_command}"
         echo 'Executing command: "'$command'"'
-        echo 'Logging standard output of RabbitMQ messages consumption in '"${rabbitmq_output_log}"
-        echo 'Logging standard error of RabbitMQ messages consumption in '"${rabbitmq_error_log}"
-        /bin/bash -c "$command >> ${rabbitmq_output_log} 2>> ${rabbitmq_error_log}"
+
+        if [ ! -z "${NAMESPACE}" ];
+        then
+          echo 'Logging standard output of RabbitMQ messages consumption in '"${output_log}"
+          echo 'Logging standard error of RabbitMQ messages consumption in '"${error_log}"
+          /bin/bash -c "$command >> ${output_log} 2>> ${error_log}"
+
+          return
+        fi
+
+        echo 'Logging standard output of worker in '"${output_log}"
+        echo 'Logging standard error of worker in '"${error_log}"
+        /bin/bash -c "$command >> ${output_log} 2>> ${error_log}"
 
         return
     fi
@@ -1215,10 +1404,18 @@ function run_command {
         export PHP_MEMORY_LIMIT=' -d memory_limit='"${memory_limit}"
     fi
 
-    echo 'Logging standard output of RabbitMQ messages consumption in '"${rabbitmq_output_log}"
-    echo 'Logging standard error of RabbitMQ messages consumption in '"${rabbitmq_error_log}"
+    if [ ! -z "${NAMESPACE}" ];
+    then
+      echo 'Logging standard output of RabbitMQ messages consumption in '"${output_log}"
+      echo 'Logging standard error of RabbitMQ messages consumption in '"${error_log}"
+      execute_command "${output_log}" "${error_log}"
 
-    execute_command "${rabbitmq_output_log}" "${rabbitmq_error_log}"
+      return
+    fi
+
+    echo 'Logging standard output of worker in '"${output_log}"
+    echo 'Logging standard error of worker in '"${error_log}"
+    execute_command "${output_log}" "${error_log}"
 }
 
 function produce_amqp_messages_for_aggregates_list {
@@ -1288,8 +1485,12 @@ function refresh_statuses() {
         export PROJECT_DIR='/var/www/devobs'
     fi
 
-    local rabbitmq_output_log="app/logs/rabbitmq."${NAMESPACE}".out.log"
-    local rabbitmq_error_log="app/logs/rabbitmq."${NAMESPACE}".error.log"
+    local rabbitmq_output_log
+    rabbitmq_output_log="app/logs/rabbitmq."${NAMESPACE}".out.log"
+
+    local rabbitmq_error_log
+    rabbitmq_error_log="app/logs/rabbitmq."${NAMESPACE}".error.log"
+
     ensure_log_files_exist "${rabbitmq_output_log}" "${rabbitmq_error_log}"
     rabbitmq_output_log="${PROJECT_DIR}/${rabbitmq_output_log}"
     rabbitmq_error_log="${PROJECT_DIR}/${rabbitmq_error_log}"
@@ -1361,4 +1562,18 @@ function today_statuses() {
 
 function follow_today_statuses() {
     tail -f app/logs/dev.log | awk '{$1=$2=$3="";print $0}' | sed -e 's/^\s\+//' | grep `date -I` | awk '{$1=$2="";print $0}'
+}
+
+function start_discovering_network {
+    before_running_command
+
+    if [ -z "${MEMBER_NAME}" ];
+    then
+        echo 'Please export a valid member name:'
+        echo 'export MEMBER_NAME="richhickey"'
+
+        return
+    fi
+
+    run_command 'app/console import-network --member-name="'${MEMBER_NAME}'"'
 }

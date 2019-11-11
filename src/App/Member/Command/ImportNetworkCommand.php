@@ -13,9 +13,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ImportNetworkCommand extends Command implements CommandReturnCodeAwareInterface
 {
-    const OPTION_MEMBER_LIST = 'member-list';
+    private const OPTION_MEMBER_LIST = 'member-list';
 
-    const OPTION_MEMBER_NAME = 'member-name';
+    private const OPTION_MEMBER_NAME = 'member-name';
 
     /**
      * @var InputInterface
@@ -40,7 +40,12 @@ class ImportNetworkCommand extends Command implements CommandReturnCodeAwareInte
     public function configure()
     {
         $this->setName('import-network')
-            ->setDescription('Import subscriptions and subscribees of each member in a member list.')
+            ->setDescription(
+                implode([
+                    'Import subscriptions and ',
+                    'subscribees of each member in a member list.'
+                ])
+            )
             ->addOption(
                 self::OPTION_MEMBER_LIST,
                 null,
@@ -69,12 +74,13 @@ class ImportNetworkCommand extends Command implements CommandReturnCodeAwareInte
         $memberList = $this->input->getOption(self::OPTION_MEMBER_LIST);
         $memberName = $this->input->getOption(self::OPTION_MEMBER_NAME);
         
-        $validMemberList = strlen(trim($memberList)) > 0;
+        $validMemberList = $this->isNotEmpty($memberList);
 
-        if (!$validMemberList && strlen(trim($memberName)) === 0) {
-            throw new \LogicException(
-                'There should be at least a non-empty member list or a member name passed as argument'
-            );
+        if (!$validMemberList && $this->isEmpty($memberName)) {
+            throw new \LogicException(implode([
+                'There should be at least a non-empty member list ',
+                'or a member name passed as argument.'
+            ]));
         }
 
         if ($validMemberList) {
@@ -86,7 +92,7 @@ class ImportNetworkCommand extends Command implements CommandReturnCodeAwareInte
                     $messageBody = [$member];
 
                     $this->producer->setContentType('application/json');
-                    $this->producer->publish(serialize(json_encode($messageBody)));
+                    $this->producer->publish($this->serializeMessageBody($messageBody));
                 }
             );
 
@@ -96,6 +102,35 @@ class ImportNetworkCommand extends Command implements CommandReturnCodeAwareInte
         $this->networkRepository->saveNetwork([$memberName]);
 
         return self::RETURN_STATUS_SUCCESS;
+    }
+
+    /**
+     * @param $subject
+     *
+     * @return bool
+     */
+    private function isEmpty($subject): bool {
+        return empty(trim($subject));
+    }
+
+    /**
+     * @param $subject
+     *
+     * @return bool
+     */
+    private function isNotEmpty($subject): bool {
+        return ! $this->isEmpty($subject);
+    }
+
+    private function serializeMessageBody($messageBody)
+    {
+        return serialize(
+            json_encode(
+                $messageBody,
+                JSON_THROW_ON_ERROR,
+                512
+            )
+        );
     }
 
 }

@@ -2,10 +2,9 @@
 
 namespace App\Member\Entity;
 
-use App\Member\MemberInterface;
-use WTW\UserBundle\Entity\User;
+use App\Member\TwitterMemberInterface;
 
-class ExceptionalMember implements MemberInterface
+class ExceptionalMember implements TwitterMemberInterface
 {
     use MemberTrait;
     use ExceptionalUserInterfaceTrait;
