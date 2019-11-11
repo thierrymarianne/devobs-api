@@ -21,5 +21,6 @@ bin/doctrine.php
 bin/google-cloud-batch
 bin/jp.php
 bin/refresh_statuses.sh
+bin/security-checker
 bin/sql-formatter
 bin/vendors
