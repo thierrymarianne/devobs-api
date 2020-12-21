@@ -1,26 +1,37 @@
-*.ini
-app/*.xml
-app/bootstrap.php.cache
-app/cache
-app/config/*.yml
-!app/config/services.yml
-app/logs
-app/SymfonyRequirements.php
 bin/phpunit
+bin/php-parse
+bin/simple-phpunit
+
 build/*
 !build/.gitignore
 composer.phar
 provisioning/containers/mysql/templates/mysql/my.cnf
 provisioning/volumes/mysql/*
+provisioning/volumes/mysql*/*
 vendor
+public/graphs
 
-bin/doctrine
-bin/doctrine-dbal
-bin/doctrine-migrations
-bin/doctrine.php
-bin/google-cloud-batch
-bin/jp.php
-bin/refresh_statuses.sh
-bin/security-checker
-bin/sql-formatter
-bin/vendors
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/.env.test
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/cache
+/var/logs
+/vendor/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
+
+###> symfony/phpunit-bridge ###
+.phpunit
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
+
+public/emoji-data/

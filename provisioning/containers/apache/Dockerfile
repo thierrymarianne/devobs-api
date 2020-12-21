@@ -1,28 +1,31 @@
-FROM php:7.3.10-apache-stretch
+FROM php:7.4.2-apache-buster
 
-# Update package lists for upgrades
-# @see https://askubuntu.com/a/222352/172316
-RUN apt-get update && apt install -y apt-utils gnupg2 wget unzip libcurl4-gnutls-dev && \
-    /bin/bash -c "wget -q -O - https://packages.blackfire.io/gpg.key | apt-key add -" && \
-    echo "deb http://packages.blackfire.io/debian any main" | tee /etc/apt/sources.list.d/blackfire.list && \
-    apt-get update && \
+RUN apt-get update && apt-get install -y wget git libicu-dev librabbitmq-dev libcurl4-gnutls-dev && \
+    docker-php-ext-install bcmath intl mysqli pcntl pdo_mysql && \
     cd /tmp && \
-    # Install PHP extensions (apcu, bcmath, blackfire, mysql, pcntl, sockets, xdebug)
-    docker-php-ext-install bcmath mysqli pcntl pdo_mysql && \
-    pecl install apcu-5.1.12 && docker-php-ext-enable apcu && \
-    apt -y install blackfire-agent blackfire-agent blackfire-php && \
+    wget https://xdebug.org/files/xdebug-2.9.2.tgz && \
+    tar -xvzf xdebug-2.9.2.tgz && \
+    cd xdebug-2.9.2 && \
+    phpize . && ./configure --with-php-config=`which php-config` && \
+    make && make install && \
     docker-php-ext-install sockets && \
-    wget https://github.com/xdebug/xdebug/archive/2.7.2.zip && \
-    unzip 2.7.2.zip && cd xdebug-2.7.2 && phpize . && ./configure --with-php-config=`which php-config` && make && make install && \
-    # DataDog PHP Tracer extension
     wget https://github.com/DataDog/dd-trace-php/archive/0.29.0.tar.gz -O /tmp/datadog-php-tracer.tar.gz && \
     cd /tmp && tar -xvzf /tmp/datadog-php-tracer.tar.gz && cd dd-trace-php-0.29.0 && \
     phpize . && ./configure --with-php-config=`which php-config` && make && make install && \
-    # Add user to run application as someone else than root
-    groupadd -g 1001 jenkins && useradd -s /bin/bash -u 1001 -g root -g jenkins -G www-data jenkins
+    wget https://pecl.php.net/get/amqp-1.9.4.tgz -O /tmp/amqp-1.9.4.tgz && \
+    cd /tmp && tar -xvzf /tmp/amqp-1.9.4.tgz && cd amqp-1.9.4 && \
+    phpize . && ./configure --with-php-config=`which php-config` && make && make install && \
+    apt install -y gnupg2 && wget -q -O - https://packages.blackfire.io/gpg.key | apt-key add - && \
+    echo "deb http://packages.blackfire.io/debian any main" | tee /etc/apt/sources.list.d/blackfire.list && \
+    apt-get update && apt install blackfire-agent blackfire-php
 
 VOLUME /etc/apache2/sites-available
 
 WORKDIR /var/www/devobs
 
-CMD ["/etc/init.d/blackfire-agent restart && apache2-foreground"]
+ADD ./tasks /tasks
+
+ADD templates/extensions.ini.dist /usr/local/etc/php/conf.d/extensions.ini
+
+CMD /bin/bash -c "source /tasks/setup-virtual-host.sh && tail -f /var/www/devobs/var/logs/apache*.log"
+

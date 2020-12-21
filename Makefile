@@ -25,12 +25,6 @@ get-apache-interactive-shell: ## Get Apache interactive shell
 remove-apache-container: ## Remove Apache container
 		@/bin/bash -c 'source ./bin/console.sh && remove_apache_container'
 
-run-apache-container: ## Run Apache container
-		@/bin/bash -c 'source ./bin/console.sh && run_apache'
-
-build-mysql-container: ## Build MySQL container
-		@/bin/bash -c 'source ./bin/console.sh && build_mysql_container'
-
 run-mysql-container: ## Run MySQL container (https://hub.docker.com/_/mysql/)
 		@/bin/bash -c 'source ./bin/console.sh && run_mysql_container'
 
@@ -52,8 +46,26 @@ grant-privileges: ## Grant privileges
 build-php-container: ## Build PHP image
 		@/bin/bash -c 'source ./bin/console.sh && build_php_container'
 
-list-php-extensions: ## List PHP extensions
-		@/bin/bash -c 'source ./bin/console.sh && list_php_extensions'
+dispatch-messages-from-aggregates-lists: ## Produce messages from aggregates list
+		@/bin/bash -c 'source ./bin/functions.sh && dispatch_messages_for_aggregates_list'
+
+dispatch-messages-from-member-timeline: ## Produce messages from member timeline
+		@/bin/bash -c 'source ./bin/functions.sh && dispatch_messages_from_member_timeline'
+
+dispatch-messages-from-members-lists: ## Produce messages from members lists
+		@/bin/bash -c 'source ./bin/functions.sh && dispatch_messages_from_members_lists'
+
+dispatch-messages-from-networks: ## Produce messages for networks
+		@/bin/bash -c 'source ./bin/functions.sh && dispatch_messages_for_networks'
+
+dispatch-messages-from-news-list: ## Produce messages from news list
+		@/bin/bash -c 'source ./bin/functions.sh && dispatch_messages_for_news_list'
+
+dispatch-messages-from-search-query: ## Produce messages from search query
+		@/bin/bash -c 'source ./bin/functions.sh && dispatch_messages_for_search_query'
+
+dispatch-messages-from-timely-statuses: ## Produce messages for timely statuses
+		@/bin/bash -c 'source ./bin/functions.sh && dispatch_messages_for_timely_statuses'
 
 remove-php-container: ## Remove PHP container
 		@/bin/bash -c 'source ./bin/console.sh && remove_php_container'
@@ -64,20 +76,20 @@ check-security-of-php-dependencies: ## Check security of PHP dependencies
 clear-backend-application-cache: ## Clear backend application (API) cache
 		@/bin/bash -c 'source ./bin/console.sh && clear_backend_application_cache'
 
-run-php-script: ## Run PHP script
-		@/bin/bash -c 'source ./bin/console.sh && run_php_script ${1}'
-
-install-php-dependencies: ## Install PHP dependencies
-		@/bin/bash -c 'source ./bin/console.sh && install_php_dependencies'
-
-add-php-dependency: ## Require a PHP dependency
-		@/bin/bash -c 'source ./bin/console.sh && add_php_dependency "${VENDOR_NAME}"'
-
-remove-php-dependency: ## Remove a PHP dependency
-		@/bin/bash -c 'source ./bin/console.sh && remove_php_dependency "${VENDOR_NAME}"'
+install-php-dependencies: ## Install PHP dependencies (APP_ENV=prod)
+		@/bin/bash -c 'source ./bin/functions.sh && install_php_dependencies'
 
 run-php: ## Run PHP with arguments
 		@/bin/bash -c 'source ./bin/console.sh && run_php'
+
+run-php-script: ## Run PHP script
+		@/bin/bash -c 'source ./bin/functions.sh && run_php_script'
+
+run-stack: ## Run stack and its dependencies
+		@/bin/bash -c 'source ./bin/functions.sh && run_stack'
+
+run-worker: ## Run worker and its dependencies
+		@/bin/bash -c 'source ./bin/functions.sh && run_worker'
 
 build-php-fpm-container: ## Build PHP-FPM image
 		@/bin/bash -c 'source ./bin/console.sh && build_php_fpm_container'
@@ -94,20 +106,17 @@ create-database-schema-test: # Create database schema in test environment
 create-prod-like-schema: ## Create production-like schema
 		@/bin/bash -c 'export PROJECT_DIR='/var/www/devobs'; source ./bin/console.sh && create_database_prod_like_schema '
 
-diff-schema: ## Generate schema migrations scripts
-		@/bin/bash -c 'export PROJECT_DIR='/var/www/devobs'; source ./bin/console.sh && diff_schema'
+diff-schema-of-read-database: ## Generate schema migrations scripts
+		@/bin/bash -c 'export PROJECT_DIR='/var/www/devobs'; source ./bin/functions.sh && compute_schema_differences_for_read_database'
 
-migrate-schema: ## Migrate the database schema
-		@/bin/bash -c 'export PROJECT_DIR='/var/www/devobs'; source ./bin/console.sh && migrate_schema'
+diff-schema-of-write-database: ## Generate schema migrations scripts
+		@/bin/bash -c 'export PROJECT_DIR='/var/www/devobs'; source ./bin/functions.sh && compute_schema_differences_for_write_database'
 
-configure-rabbitmq-user-privileges: ## Configure RabbitMQ user privileges
-		@/bin/bash -c 'source ./bin/console.sh && configure_rabbitmq_user_privileges'
+migrate-schema-of-read-database: ## Migrate the read database schema
+		@/bin/bash -c 'export PROJECT_DIR='/var/www/devobs'; source ./bin/functions.sh && migrate_schema_of_read_database'
 
-setup-amqp-queues: ## Set up AMQP fabric (create expected queue)
-		@/bin/bash -c 'source ./bin/console.sh && setup_amqp_queues'
-
-set-acl:
-		@/bin/bash -c 'source ./bin/console.sh && set_acl'
+migrate-schema-of-write-database: ## Migrate the write database schema
+		@/bin/bash -c 'export PROJECT_DIR='/var/www/devobs'; source ./bin/functions.sh && migrate_schema_of_write_database'
 
 list-amqp-messages: ## List AMQP messags
 		@/bin/bash -c 'source ./bin/console.sh && list_amqp_queues'
@@ -121,44 +130,20 @@ run-rabbitmq-container: ## Run RabbitMQ container (https://hub.docker.com/_/rabb
 remove-rabbitmq-container: ## Remove RabbitMQ container
 		@/bin/bash -c 'source ./bin/console.sh && remove_rabbitmq_container'
 
-list-rabbitmq-messages: ## List messages accumulated with RabbitMQ
-		@/bin/bash -c '/usr/local/sbin/rabbitmqctl list_queues -p /weaving_the_web'
-
-produce-amqp-messages-from-members-lists: ## Produce messages from members lists
-		@/bin/bash -c 'source ./bin/console.sh && produce_amqp_messages_from_members_lists'
-
-produce-amqp-messages-from-aggregates-lists: ## Produce messages from aggregates list
-		@/bin/bash -c 'source ./bin/console.sh && produce_amqp_messages_for_aggregates_list'
-
-produce-amqp-messages-from-search-query: ## Produce messages from search query
-		@/bin/bash -c 'source ./bin/console.sh && produce_amqp_messages_for_search_query'
-
-produce-amqp-messages-for-timely-statuses: ## Produce messages for timely statuses
-		@/bin/bash -c 'source ./bin/console.sh && produce_amqp_messages_for_timely_statuses'
-
-produce-amqp-messages-for-networks: ## Produce messages for networks
-		@/bin/bash -c 'source ./bin/console.sh && produce_amqp_messages_for_networks'
-
-produce-amqp-messages-from-news-lists: ## Produce messages from news list
-		@/bin/bash -c 'source ./bin/console.sh && produce_amqp_messages_for_news_list'
-
-produce-amqp-messages-from-member-timeline: ## Produce messages from member timeline
-		@/bin/bash -c 'source ./bin/console.sh && produce_amqp_messages_from_member_timeline'
-
 refresh-statuses: ## Refresh statuses
 		@/bin/bash -c 'source ./bin/console.sh && refresh_statuses'
 
-run-redis-container: ## Run Redis container (https://hub.docker.com/_/redis/)
-		@/bin/bash -c 'source ./bin/console.sh && run_redis_container'
+handle-messages: ## Consume twitter API messages
+		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source bin/consume_twitter_api.sh'
+
+handle-news-messages: ## Consume twitter API news messages
+		@/bin/bash -c 'export PROJECT_DIR=`pwd` && cd "${PROJECT_DIR}" && source bin/consume_twitter_api_for_news.sh'
 
 keep-php-container-running: ## Keep a running container having PHP
 		@/bin/bash -c 'source ./bin/console.sh && keep_php_container_running'
 
-consume-twitter-api-messages: ## Consume twitter API messages
-		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source ./bin/consume_twitter_api.sh'
-
-consume-twitter-api-news-messages: ## Consume twitter API news messages
-		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && cd "${PROJECT_DIR}" && source ./bin/consume_twitter_api_for_news.sh'
+stop-workers: ## Stop workers
+		@/bin/bash -c 'source ./bin/functions.sh && stop_workers'
 
 today-statuses: ## Filter the statuses for today from the log file
 		@/bin/bash -c 'source ./bin/console.sh && today_statuses'
@@ -167,7 +152,13 @@ follow-today-statuses: ## Filter the statuses for today from the log file
 		@/bin/bash -c 'source ./bin/console.sh && follow_today_statuses'
 
 run-php-unit-tests: ## Run unit tests with PHPUnit
-		@/bin/bash -c 'source ./bin/console.sh && run_php_unit_tests'
+		@/bin/bash -c 'source ./bin/functions.sh && run_php_unit_tests'
 
-start-discovering-network: ## Start discovering a network attending a microblogging platform
-		@/bin/bash -c 'export PROJECT_DIR=`pwd` DOCKER_MODE=1 && source ./bin/console.sh && start_discovering_network'
+run-php-features-tests: ## Run features tests with Behat
+		@/bin/bash -c 'source ./bin/functions.sh && run_php_features_tests'
+
+run-composer: # Run composer
+		@/bin/bash -c 'source ./bin/functions.sh && run_composer'
+
+restart-web-server: # Restart web Server
+		@/bin/bash -c 'source ./bin/functions.sh && restart_web_server'
