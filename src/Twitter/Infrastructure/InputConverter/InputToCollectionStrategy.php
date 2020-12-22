@@ -22,7 +22,6 @@ class InputToCollectionStrategy
         self::listCollectionRestriction($input, $strategy);
         self::collectionSchedule($input, $strategy);
         self::aggregatePriority($input, $strategy);
-        self::queryRestriction($input, $strategy);
         self::memberRestriction($input, $strategy);
         self::ignoreWhispers($input, $strategy);
         self::includeOwner($input, $strategy);
@@ -117,22 +116,6 @@ class InputToCollectionStrategy
             && $input->getOption(PublicationStrategyInterface::RULE_PRIORITY_TO_AGGREGATES)
         ) {
             $strategy->willPrioritizeAggregates($input->getOption(PublicationStrategyInterface::RULE_PRIORITY_TO_AGGREGATES));
-        }
-    }
-
-    /**
-     * @param InputInterface               $input
-     * @param PublicationStrategyInterface $strategy
-     */
-    private static function queryRestriction(
-        InputInterface $input,
-        PublicationStrategyInterface $strategy
-    ): void {
-        if (
-            $input->hasOption(PublicationStrategyInterface::RULE_QUERY_RESTRICTION)
-            && $input->getOption(PublicationStrategyInterface::RULE_QUERY_RESTRICTION)
-        ) {
-            $strategy->willApplyQueryRestriction($input->getOption(PublicationStrategyInterface::RULE_QUERY_RESTRICTION));
         }
     }
 

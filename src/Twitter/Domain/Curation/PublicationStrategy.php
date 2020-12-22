@@ -200,14 +200,6 @@ class PublicationStrategy implements PublicationStrategyInterface
     /**
      * @return bool
      */
-    public function shouldNotSearchByQuery(): bool
-    {
-        return !$this->shouldSearchByQuery();
-    }
-
-    /**
-     * @return bool
-     */
     public function shouldPrioritizeLists(): bool
     {
         return $this->weightedAggregates;
@@ -223,14 +215,6 @@ class PublicationStrategy implements PublicationStrategyInterface
         return $this->shouldNotApplyListRestriction()
             || $this->applyListRestriction($list)
             || $this->applyListRestrictionAmongOthers($list);
-    }
-
-    /**
-     * @return bool
-     */
-    public function shouldSearchByQuery(): bool
-    {
-        return $this->queryRestriction !== null;
     }
 
     /**
