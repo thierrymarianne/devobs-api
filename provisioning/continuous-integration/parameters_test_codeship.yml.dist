@@ -1,7 +1,7 @@
 APP_ENV=test
 APP_SECRET=64ba62c3b4d48062948d77bc9b7a224f
 
-DATABASE_URL="postgresql://root@127.0.0.1:5432/test?serverVersion=13.1&charset=utf8"
+DATABASE_URL="postgresql://$PGUSER:$PGPASSWORD@127.0.0.1:5432/test?serverVersion=12&charset=utf8"
 
 MESSENGER_TRANSPORT_DSN_PUBLICATIONS=amqp://guest:guest@127.0.0.1:5672/%2f/publications
 MESSENGER_TRANSPORT_DSN_FAILURES=amqp://guest:guest@127.0.0.1:5672/%2f/failures
