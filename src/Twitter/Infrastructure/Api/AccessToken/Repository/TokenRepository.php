@@ -209,8 +209,10 @@ class TokenRepository extends ServiceEntityRepository implements TokenRepository
      */
     private function applyUnfrozenTokenCriteria(QueryBuilder $queryBuilder): QueryBuilder {
         $queryBuilder->andWhere('t.type = :type');
-        $tokenRepository = $this->getEntityManager()->getRepository('Api:TokenType');
-        $tokenType = $tokenRepository->findOneBy(['name' => TokenType::USER]);
+
+        $tokenTypeRepository = $this->getEntityManager()->getRepository('Api:TokenType');
+
+        $tokenType = $tokenTypeRepository->findOneBy(['name' => TokenType::USER]);
         $queryBuilder->setParameter('type', $tokenType);
 
         $queryBuilder->andWhere('t.oauthTokenSecret IS NOT NULL');
