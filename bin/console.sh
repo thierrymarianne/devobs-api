@@ -613,3 +613,10 @@ function create_test_database() {
   export SCRIPT='php bin/console doc:mig:diff -n -e test -vvvv' && make run-php-script && \
   export SCRIPT='php bin/console doc:mig:mig -n -e test -vvvv' && make run-php-script
 }
+
+function load_production_fixtures() {
+  local script
+  script='php bin/console devobs:load-production-fixtures -vvvv'
+
+  run_php_script "${script}" 'interactive_mode'
+}
