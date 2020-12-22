@@ -79,19 +79,6 @@ services:
                 name: messenger.message_handler
                 handles: App\Twitter\Infrastructure\Amqp\Message\FetchMemberStatus
 
-    press_review.fetch_likes:
-        class:                          "%press_review.publication_message.handler.class%"
-        calls:
-            - [ 'setCollector',         [ '@App\Twitter\Infrastructure\Twitter\Collector\PublicationCollector'] ]
-            - [ 'setLogger',            [ '@monolog.logger.status'] ]
-            - [ 'setMemberRepository',  [ '@App\Twitter\Infrastructure\Repository\Membership\MemberRepository'] ]
-        properties:
-            tokenRepository:            '@repository.access_token'
-        tags:
-            -
-                name: messenger.message_handler
-                handles: App\Twitter\Infrastructure\Amqp\Message\FetchMemberLikes
-
     App\Twitter\Infrastructure\Console\MigrateStatusToPublicationsCommand:
         class:  'App\Twitter\Infrastructure\Console\MigrateStatusToPublicationsCommand'
         calls:

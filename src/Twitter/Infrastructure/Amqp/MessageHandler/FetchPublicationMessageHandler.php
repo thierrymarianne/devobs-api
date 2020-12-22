@@ -36,10 +36,6 @@ class FetchPublicationMessageHandler implements MessageSubscriberInterface
         yield FetchMemberStatus::class => [
             'from_transport' => 'news_status'
         ];
-
-        yield FetchMemberLikes::class => [
-            'from_transport' => 'news_likes'
-        ];
     }
 
     /**
