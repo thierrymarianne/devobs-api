@@ -1,7 +1,7 @@
 FROM php:7.4.2-apache-buster
 
-RUN apt-get update && apt-get install -y wget git libicu-dev librabbitmq-dev libcurl4-gnutls-dev && \
-    docker-php-ext-install bcmath intl mysqli pcntl pdo_mysql && \
+RUN apt-get update && apt-get install -y wget git libicu-dev libpq-dev librabbitmq-dev libcurl4-gnutls-dev && \
+    docker-php-ext-install pdo_pgsql bcmath intl pcntl && \
     cd /tmp && \
     wget https://xdebug.org/files/xdebug-2.9.2.tgz && \
     tar -xvzf xdebug-2.9.2.tgz && \

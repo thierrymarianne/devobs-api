@@ -2,8 +2,8 @@
 # https://hub.docker.com/_/php?tab=tags for vulnerabilites
 FROM php:7.4.4-fpm-buster
 
-RUN apt-get update && apt-get install wget unzip libcurl4-openssl-dev -y && \
-    docker-php-ext-install bcmath mysqli pcntl pdo_mysql && \
+RUN apt-get update && apt-get install wget unzip libpq-dev libcurl4-openssl-dev -y && \
+    docker-php-ext-install pdo_pgsql bcmath pcntl && \
     cd /tmp && \
     wget https://github.com/xdebug/xdebug/archive/2.8.1.zip && \
     unzip 2.8.1.zip && \
