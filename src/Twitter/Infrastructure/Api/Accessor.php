@@ -180,13 +180,6 @@ class Accessor implements ApiAccessorInterface,
 
         $this->tokenRepository = $tokenRepository;
 
-        $this->tokenRepository->ensureTokenExists(
-            $accessTokenKey,
-            $accessTokenSecret,
-            $consumerKey,
-            $consumerSecret
-        );
-
         $this->setLogger($logger);
     }
 
