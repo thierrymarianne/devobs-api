@@ -71,7 +71,7 @@ class FetchPublicationMessageDispatcher extends AggregateAwareCommand
 
     public function configure()
     {
-        $this->setName('press-review:dispatch-messages-to-fetch-member-statuses')
+        $this->setName('devobs:dispatch-messages-to-fetch-member-statuses')
              ->setDescription('Dispatch messages to fetch member statuses')
              ->addOption(
                  self::OPTION_OAUTH_TOKEN,

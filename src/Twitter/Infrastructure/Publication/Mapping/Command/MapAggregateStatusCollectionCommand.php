@@ -92,7 +92,7 @@ class MapAggregateStatusCollectionCommand extends Command implements CommandRetu
 
     public function configure()
     {
-        $this->setName('press-review:map-aggregate-status-collection')
+        $this->setName('devobs:map-aggregate-status-collection')
             ->setDescription('Map a service to a collection of aggregate statuses.')
             ->addOption(
                 self::OPTION_MAPPING,

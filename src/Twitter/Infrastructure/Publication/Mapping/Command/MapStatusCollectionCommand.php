@@ -59,7 +59,7 @@ class MapStatusCollectionCommand extends Command implements CommandReturnCodeAwa
 
     public function configure()
     {
-        $this->setName('press-review:map-status-collection')
+        $this->setName('devobs:map-status-collection')
             ->setDescription('Map a service to a collection of statuses.')
             ->addOption(
                 self::OPTION_MAPPING,

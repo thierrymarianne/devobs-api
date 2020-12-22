@@ -12,9 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class TokenType
 {
-    const USER = 'user';
+    public const USER = 'user';
 
-    const APPLICATION = 'application';
+    public const APPLICATION = 'application';
 
     public function __construct()
     {
