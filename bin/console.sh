@@ -78,68 +78,9 @@ function create_network() {
     /bin/bash -c "${command}"
 }
 
-function kill_existing_consumers {
-    local pids
-    pids=(`ps ux | grep "rabbitmq:consumer" | grep -v '/bash' | grep -v grep | cut -d ' ' -f 2-3`)
-
-    local totalProcesses
-    totalProcesses=`ps ux | grep "rabbitmq:consumer" | grep -v grep | grep -c ''`
-
-    if [ -n "${DOCKER_MODE}" ];
-    then
-        remove_exited_containers
-    fi
-
-    if [ "${totalProcesses}" == "0" ] ||  [ -z "${totalProcesses}" ];
-    then
-        echo 'No consumption processes left to kill'
-        return;
-    fi
-
-    echo 'The total consumption processes counted is '"${totalProcesses}"
-
-    if [ -z "${MAX_PROCESSES}" ];
-    then
-        MAX_PROCESSES=2
-    fi
-
-    echo 'The maximum processes to be kept alive is '"${MAX_PROCESSES}"
-
-    if [ -n ${DOCKER_MODE} ];
-    then
-        totalProcesses="$(docker ps -a | grep "${application_prefix}"php | grep -c '')"
-    fi
-
-    local total_processes
-    total_processes=$(expr 0 + "${totalProcesses}")
-
-    local max_processes
-    max_processes=$(expr 0 + "${MAX_PROCESSES}")
-
-    if [ "${total_processes}" -le "${max_processes}" ];
-    then
-        return
-    fi
-
-    if [ -z "${pids}" ];
-    then
-        return
-    fi
-
-    if [ -n "${DOCKER_MODE}" ];
-    then
-        make remove-php-container
-
-        return
-    fi
-
-    export IFS=$'\n'
-    for pid in ${pids[@]};
-    do echo 'About to kill process with pid '"${pid}" && \
-        _pid=$(echo 0 + `echo "${pid}" | sed -e "s/[[:space:]]+//g"` | bc) && \
-        kill -9 ${_pid} && \
-        echo 'Just killed process of pid "'${_pid}'" consuming messages'
-    done
+function build_stack_images() {
+    docker-compose -f ./provisioning/containers/docker-compose.yml \
+    --project-name="$(get_project_name)" build
 }
 
 function stop_workers() {
@@ -291,6 +232,7 @@ function get_project_dir {
     echo "${project_dir}"
 }
 
+# @see https://getcomposer.org/doc/articles/authentication-for-private-packages.md#github-oauth
 function install_php_dependencies {
     local project_dir
     project_dir="$(get_project_dir)"
@@ -302,10 +244,18 @@ function install_php_dependencies {
         production_option='--apcu-autoloader '
     fi
 
+    if [ -z "${GITHUB_TOKEN}" ];
+    then
+        echo 'Please export a valid github token e.g.'
+        echo 'export GITHUB_TOKEN="__fill_me__"'
+        return 1
+    fi
+
     local command
     command=$(echo -n '/bin/bash -c "cd '"${project_dir}"' &&
     source '"${project_dir}"'/bin/install-composer.sh &&
-    php '"${project_dir}"'/composer.phar install '"${production_option}"'--prefer-dist -n"')
+    php '"${project_dir}"'/composer.phar config github-oauth.github.com '"${GITHUB_TOKEN}"' \
+    && '"${project_dir}"'/composer.phar install '"${production_option}"'--prefer-dist -n"')
     echo "${command}" | make run-php
 }
 
@@ -415,6 +365,8 @@ function run_php() {
 }
 
 function run_stack() {
+    ensure_blackfire_is_configured
+
     cd provisioning/containers || exit
 
     local project_name
@@ -523,6 +475,39 @@ function run_command {
     execute_command "${output_log}" "${error_log}"
 }
 
+function ensure_blackfire_is_configured() {
+    local working_directory
+    working_directory="$(pwd)"
+
+    cd ./provisioning/containers/apache/templates/blackfire || exit
+
+    if [ ! -e zz-blackfire.ini ];
+    then
+        cp zz-blackfire.ini{.dist,}
+        echo 'Copied "zz-blackfire.ini" configuration file'
+    else
+        echo '"zz-blackfire.ini" configuration file already exists'
+    fi
+
+    if [ ! -e .blackfire.ini ];
+    then
+        cp .blackfire.ini{.dist,}
+        echo 'Copied ".blackfire.ini" configuration file'
+    else
+        echo '".blackfire.ini" configuration file already exists'
+    fi
+
+    if [ ! -e agent ];
+    then
+        cp agent{.dist,}
+        echo 'Copied "agent" configuration file'
+    else
+        echo '"agent" configuration file already exists'
+    fi
+
+    cd "${working_directory}" || exit
+}
+
 function dispatch_fetch_publications_messages {
     if [ -z ${NAMESPACE} ];
     then
@@ -595,4 +580,36 @@ function restart_web_server() {
     project_name="$(get_project_name)"
 
     docker-compose --project-name="${project_name}" restart web
+}
+
+function install_local_ca_store() {
+    mkcert -install
+}
+
+function generate_development_tls_certificate_and_key() {
+    local destination
+    destination='./provisioning/containers/reverse-proxy/certificates'
+
+    local project_name
+    project_name="$(get_project_name)"
+
+    local domain_name
+    domain_name="api.local.${project_name}.app"
+
+    mkcert \
+      -cert-file="${destination}/${domain_name}.pem" \
+      -key-file="${destination}/${domain_name}-key.pem" \
+      "${domain_name}"
+}
+
+function create_test_database() {
+  rm /src/Twitter/Infrastructure/Database/Migrations/Version* -f
+
+  export INTERACTIVE_MODE=true
+  export SCRIPT='php bin/console cache:clear --no-warmup -e test -vvvv' && make run-php-script && \
+  export SCRIPT='php bin/console cache:warmup -e test -vvvv' && make run-php-script && \
+  export SCRIPT='php bin/console doc:database:drop --force --if-exists -e test -vvvv' && make run-php-script && \
+  export SCRIPT='php bin/console doc:database:create -e test --if-not-exists -vvvv' && make run-php-script && \
+  export SCRIPT='php bin/console doc:mig:diff -n -e test -vvvv' && make run-php-script && \
+  export SCRIPT='php bin/console doc:mig:mig -n -e test -vvvv' && make run-php-script
 }

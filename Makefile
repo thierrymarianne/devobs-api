@@ -10,6 +10,9 @@ help:
 create-network: ## Create Docker network
 		@/bin/bash -c 'source ./bin/console.sh && create_network'
 
+build-stack-images: ## Build Docker images required by development stack
+		@/bin/bash -c 'source ./bin/console.sh && build_stack_images'
+
 dispatch-fetch-publications-messages: ## Produce messages to fetch publications
 		@/bin/bash -c 'source ./bin/console.sh && dispatch_fetch_publications_messages'
 
@@ -46,8 +49,14 @@ run-php-unit-tests: ## Run unit tests with PHPUnit
 run-php-features-tests: ## Run features tests with Behat
 		@/bin/bash -c 'source ./bin/console.sh && run_php_features_tests'
 
-run-composer: # Run composer
-		@/bin/bash -c 'source ./bin/console.sh && run_composer'
-
-restart-web-server: # Restart web Server
+restart-web-server: ## Restart web Server
 		@/bin/bash -c 'source ./bin/console.sh && restart_web_server'
+
+install-local-ca-store: ## Install local CA in the system trust store
+		@/bin/bash -c 'source ./bin/console.sh && install_local_ca_store'
+
+generate-development-tls-certificate-and-key: ## Generate TLS certificate and key for development
+		@/bin/bash -c 'source ./bin/console.sh && generate_development_tls_certificate_and_key'
+
+create-test-database: ## Create test database
+		@/bin/bash -c 'source ./bin/console.sh && create_test_database'

@@ -19,28 +19,47 @@ Install Docker compose by following instructions from the [official documentatio
 
 Intall all PHP vendors
 
-```
+```shell
 make install-php-dependencies
 ```
 
-### RabbitMQ
+Generate TLS certificates
 
-List AMQP messages
-
+```shell
+make install-local-ca-store
+make generate-development-tls-certificate-and-key
 ```
-make list-amqp-messages
+
+Build Docker images
+
+```shell
+make build-stack-images
 ```
 
-## Running containers
+## Run development stack
 
-```
+```shell
 make run-stack
 ```
 
-## Testing
+## Run test suites
+
+Create test database
+
+```shell
+# requires granting privileges to a test user
+# See provisioning/containers/postgres/templates/grant_privileges.sql
+make create-test-database
+```
 
 Run unit tests with PHPUnit 
 
-```
+```shell
 make run-php-unit-tests
 ```
+
+Run features tests with Behat
+
+```shell
+make run-php-features-tests
+``` 
