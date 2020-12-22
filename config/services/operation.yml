@@ -17,11 +17,12 @@ services:
         tags:
             - { name: 'console.command' }
 
-    App\Twitter\Domain\Api\Repository\TokenTypeRepositoryInterface: '@App\Twitter\Infrastructure\Api\Repository\TokenTypeRepository'
-
     App\Twitter\Infrastructure\Api\Repository\TokenTypeRepository:
         class: App\Twitter\Infrastructure\Api\Repository\TokenTypeRepository
         arguments:
             - '@Doctrine\Common\Persistence\ManagerRegistry'
             - 'App\Twitter\Infrastructure\Api\Entity\TokenType'
-            - '@monolog.logger.doctrine'
+        calls:
+            - [ 'setLogger', [ '@monolog.logger.doctrine' ]]
+
+    App\Twitter\Domain\Api\Repository\TokenTypeRepositoryInterface: '@App\Twitter\Infrastructure\Api\Repository\TokenTypeRepository'

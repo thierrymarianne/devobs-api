@@ -6,10 +6,9 @@ namespace App\Twitter\Infrastructure\Api\Repository;
 
 use App\Twitter\Domain\Api\Repository\TokenTypeRepositoryInterface;
 use App\Twitter\Infrastructure\Api\Entity\TokenType;
+use App\Twitter\Infrastructure\DependencyInjection\LoggerTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\ORMException;
-use Doctrine\Persistence\ManagerRegistry;
-use Psr\Log\LoggerInterface;
 
 /**
  * @method TokenType|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,20 +18,7 @@ use Psr\Log\LoggerInterface;
  */
 class TokenTypeRepository extends ServiceEntityRepository implements TokenTypeRepositoryInterface
 {
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    public function __construct(
-        ManagerRegistry $registry,
-        string $entityClass,
-        LoggerInterface $logger
-    )
-    {
-        $this->logger = $logger;
-        parent::__construct($registry, $entityClass);
-    }
+    use LoggerTrait;
 
     public function ensureTokenTypesExist(): void
     {
