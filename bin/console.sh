@@ -603,7 +603,7 @@ function generate_development_tls_certificate_and_key() {
 }
 
 function create_test_database() {
-  rm /src/Twitter/Infrastructure/Database/Migrations/Version* -f
+  rm ./src/Twitter/Infrastructure/Database/Migrations/Version* -f
 
   export INTERACTIVE_MODE=true
   export SCRIPT='php bin/console cache:clear --no-warmup -e test -vvvv' && make run-php-script && \
