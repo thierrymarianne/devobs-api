@@ -161,11 +161,6 @@ class PublicationStrategy implements PublicationStrategyInterface
         return !$this->emptyListCollection();
     }
 
-    public function shouldFetchLikes(): bool
-    {
-        return $this->fetchLikes;
-    }
-
     public function shouldFetchPublicationsFromCursor(): ?int
     {
         return $this->cursor;

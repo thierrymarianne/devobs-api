@@ -3,20 +3,17 @@ declare(strict_types=1);
 
 namespace App\Twitter\Infrastructure\Amqp\Command;
 
+use App\Twitter\Domain\Curation\PublicationStrategyInterface;
 use App\Twitter\Infrastructure\Amqp\Exception\SkippableOperationException;
 use App\Twitter\Infrastructure\Amqp\Exception\UnexpectedOwnershipException;
 use App\Twitter\Infrastructure\Api\Entity\Token;
 use App\Twitter\Infrastructure\Api\Exception\InvalidSerializedTokenException;
-use App\Twitter\Domain\Curation\PublicationStrategyInterface;
 use App\Twitter\Infrastructure\DependencyInjection\OwnershipAccessorTrait;
 use App\Twitter\Infrastructure\DependencyInjection\Publication\PublicationMessageDispatcherTrait;
 use App\Twitter\Infrastructure\DependencyInjection\TranslatorTrait;
+use App\Twitter\Infrastructure\Exception\OverCapacityException;
 use App\Twitter\Infrastructure\InputConverter\InputToCollectionStrategy;
 use App\Twitter\Infrastructure\Operation\OperationClock;
-use App\Twitter\Infrastructure\Exception\OverCapacityException;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\OptimisticLockException;
 use Exception;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -35,7 +32,6 @@ class FetchPublicationMessageDispatcher extends AggregateAwareCommand
     private const OPTION_PRIORITY_TO_AGGREGATES = PublicationStrategyInterface::RULE_PRIORITY_TO_AGGREGATES;
     private const OPTION_LIST                   = PublicationStrategyInterface::RULE_LIST;
     private const OPTION_LISTS                  = PublicationStrategyInterface::RULE_LISTS;
-    private const OPTION_FETCH_LIKES            = PublicationStrategyInterface::RULE_FETCH_LIKES;
     private const OPTION_CURSOR                 = PublicationStrategyInterface::RULE_CURSOR;
 
     private const OPTION_OAUTH_TOKEN  = 'oauth_token';
@@ -116,11 +112,6 @@ class FetchPublicationMessageDispatcher extends AggregateAwareCommand
                 'iw',
                 InputOption::VALUE_NONE,
                 'Should ignore whispers (publication from members having not published anything for a month)'
-            )->addOption(
-                self::OPTION_FETCH_LIKES,
-                'fl',
-                InputOption::VALUE_NONE,
-                'Should fetch likes'
             )->setAliases(['pr:d-m-t-f-m-s']);
     }
 
