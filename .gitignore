@@ -9,6 +9,7 @@ build/*
 composer.phar
 provisioning/containers/mysql/templates/mysql/my.cnf
 provisioning/volumes/postgres/*
+provisioning/volumes/postgres*
 vendor
 public/graphs
 
