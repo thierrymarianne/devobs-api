@@ -1,5 +1,7 @@
 # DevObs
 
+[![Codeship Status for thierrymarianne/devobs-api](https://app.codeship.com/projects/beea8780-6695-0137-8a94-5e66d93e8e29/status?branch=main)](https://app.codeship.com/projects/345349)
+
 Easing observation of Twitter lists related to software development
 
 ## Installation
