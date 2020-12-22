@@ -23,8 +23,8 @@ ADD templates/20-xdebug.ini.dist /usr/local/etc/php/conf.d/20-xdebug.ini
 
 ADD templates/extensions.ini.dist /usr/local/etc/php/conf.d/extensions.ini
 
-VOLUME /var/www/devobs
+VOLUME /var/www/api
 
-WORKDIR /var/www/devobs
+WORKDIR /var/www/api
 
 CMD ["tail", "-f", "/dev/null"]

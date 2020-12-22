@@ -1,10 +1,23 @@
 version: '3'
 services:
 
+    # https://doc.traefik.io/traefik/getting-started/quick-start/
+    reverse-proxy:
+        image: traefik:v2.3
+        command: --providers.docker --api.insecure=true
+        ports:
+            # The HTTP port
+            - "80:80"
+            # The Web UI (enabled by --api.insecure=true)
+            - "8080:8080"
+        volumes:
+            # So that Traefik can listen to the Docker events
+            - /var/run/docker.sock:/var/run/docker.sock
+
     web:
         build: ./apache
         networks:
-            - press-review-network
+            - devobs-network
         ports:
             - "127.0.0.1:80:80"
         volumes:
@@ -14,9 +27,7 @@ services:
             - ../containers/apache/templates/blackfire/zz-blackfire.ini:/usr/local/etc/php/conf.d/zz-blackfire.ini
             - ../containers/apache/templates/blackfire/.blackfire.ini:/root/.blackfire.ini
             - ../containers/apache/templates/blackfire/agent:/etc/blackfire/agent
-            - ../../:/var/www/devobs
-        external_links:
-            - mysql
+            - ../../:/var/www/api
         depends_on:
             - cache
             - worker
@@ -24,50 +35,35 @@ services:
     worker:
         build: ./php
         networks:
-            press-review-network:
+            devobs-network:
                 aliases:
                     - worker
         volumes:
             - ../containers/php/templates/20-no-xdebug.ini.dist:/usr/local/etc/php/conf.d/20-xdebug.ini
-            - ../../:/var/www/devobs
+            - ../../:/var/www/api
         depends_on:
             - messenger
 
-    db_read:
-        build: ./mysql
-        restart: always
+    database:
+        build: ./postgres
         networks:
-            press-review-network:
+            devobs-network:
                 aliases:
-                    - read
+                    - database
+        restart: always
         env_file:
             - ../../.env.local
         ports:
-            - "127.0.0.1:33062:3306"
+            - "127.0.0.1:5432:5432"
         volumes:
-            - ../volumes/mysql:/var/lib/mysql
-
-    db_write:
-        build: ./mariadb
-        restart: always
-        ports:
-            - "127.0.0.1:33061:3306"
-        env_file:
-            - ../../.env.local
-        networks:
-            press-review-network:
-                aliases:
-                    - write
-        volumes:
-            - ../volumes/mariadb:/var/lib/mysql
-            - ./mariadb/templates/docker.cnf:/etc/mysql/mariadb.conf.d/docker.cnf
+            - ../volumes/postgres:/var/lib/postgresql/data
 
     messenger:
         build: ./rabbitmq
         expose:
             - "5672"
         networks:
-            press-review-network:
+            devobs-network:
                 aliases:
                     - messenger
         restart: always
@@ -84,15 +80,15 @@ services:
             - "6379"
         restart: always
         networks:
-            press-review-network:
+            devobs-network:
                 aliases:
                     - cache
         volumes:
             - ../volumes/redis:/data
 
 networks:
-    press-review-network:
+    devobs-network:
         driver: bridge
         ipam:
             config:
-                - subnet: 192.169.194.0/25
+                - subnet: 192.169.193.0/28

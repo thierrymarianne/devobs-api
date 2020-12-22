@@ -21,11 +21,11 @@ RUN apt-get update && apt-get install -y wget git libicu-dev librabbitmq-dev lib
 
 VOLUME /etc/apache2/sites-available
 
-WORKDIR /var/www/devobs
+WORKDIR /var/www/api
 
 ADD ./tasks /tasks
 
 ADD templates/extensions.ini.dist /usr/local/etc/php/conf.d/extensions.ini
 
-CMD /bin/bash -c "source /tasks/setup-virtual-host.sh && tail -f /var/www/devobs/var/logs/apache*.log"
+CMD /bin/bash -c "source /tasks/setup-virtual-host.sh && tail -f /var/www/api/var/logs/apache*.log"
 
