@@ -4,22 +4,27 @@ services:
     # https://doc.traefik.io/traefik/getting-started/quick-start/
     reverse-proxy:
         image: traefik:v2.3
-        command: --providers.docker --api.insecure=true
+        command:
+            - "--configFile=/etc/traefik/traefik.toml"
+        networks:
+            devobs-network:
+                aliases:
+                    - reverse-proxy
         ports:
-            # The HTTP port
-            - "80:80"
-            # The Web UI (enabled by --api.insecure=true)
-            - "8080:8080"
+            - "127.0.0.1:443:443"
+            - "127.0.0.1:8080:8080"
         volumes:
-            # So that Traefik can listen to the Docker events
             - /var/run/docker.sock:/var/run/docker.sock
+            - ./reverse-proxy/templates/traefik.toml:/etc/traefik/traefik.toml
+            - ./reverse-proxy/templates/dynamic-config:/etc/traefik/dynamic-config
+            - ./reverse-proxy/certificates:/certificates
 
     web:
         build: ./apache
         networks:
             - devobs-network
-        ports:
-            - "127.0.0.1:80:80"
+        expose:
+            - "80"
         volumes:
             - ../containers/apache/templates:/templates
             - ../containers/apache/tasks:/tasks
@@ -31,6 +36,12 @@ services:
         depends_on:
             - cache
             - worker
+            - reverse-proxy
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=docker-network"
+            - "traefik.http.routers.web.rule=Host(`api.local.devobs.app`)"
+            - "traefik.http.routers.web.entrypoints=websecure"
 
     worker:
         build: ./php
