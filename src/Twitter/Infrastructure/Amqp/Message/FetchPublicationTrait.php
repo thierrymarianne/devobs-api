@@ -92,22 +92,13 @@ trait FetchPublicationTrait
         return $this->fetchLikes;
     }
 
-    /**
-     * @param Aggregate       $aggregate
-     * @param TokenInterface  $token
-     * @param MemberInterface $member
-     * @param bool|null       $fetchLikes
-     * @param string|null     $dateBeforeWhichStatusAreCollected
-     *
-     * @return FetchPublicationTrait
-     */
     public static function makeMemberIdentityCard(
         Aggregate $aggregate,
         TokenInterface $token,
         MemberInterface $member,
         ?string $dateBeforeWhichStatusAreCollected,
         bool $fetchLikes = false
-    ): self {
+    ): FetchPublicationInterface {
         return new self(
             $member->getTwitterUsername(),
             $aggregate->getId(),
