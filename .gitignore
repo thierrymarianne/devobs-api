@@ -8,8 +8,7 @@ build/*
 !build/.gitignore
 composer.phar
 provisioning/containers/mysql/templates/mysql/my.cnf
-provisioning/volumes/mysql/*
-provisioning/volumes/mysql*/*
+provisioning/volumes/postgres/*
 vendor
 public/graphs
 
