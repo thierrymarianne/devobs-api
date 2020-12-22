@@ -24,7 +24,6 @@
         "ext-bcmath": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
-        "ext-mysqli": "*",
         "ext-pdo": "*",
         "abraham/twitteroauth": "dev-main",
         "auth0/auth0-php": "~5.0",

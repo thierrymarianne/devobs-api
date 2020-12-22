@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a66986fe004e6cb8dcc73b4444202346",
+    "content-hash": "b3068a2a48d565a19f5e82c4f13d6ba3",
     "packages": [
         {
             "name": "abraham/twitteroauth",
@@ -5256,12 +5256,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/dom-crawler.git",
-                "reference": "3ebdd995dbfe1dcb6d60a3ddfd188feddde571c0"
+                "reference": "2cf8ab66d91d4d73c5848a8cc5afd1e09c82d72d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/dom-crawler/zipball/3ebdd995dbfe1dcb6d60a3ddfd188feddde571c0",
-                "reference": "3ebdd995dbfe1dcb6d60a3ddfd188feddde571c0",
+                "url": "https://api.github.com/repos/symfony/dom-crawler/zipball/2cf8ab66d91d4d73c5848a8cc5afd1e09c82d72d",
+                "reference": "2cf8ab66d91d4d73c5848a8cc5afd1e09c82d72d",
                 "shasum": ""
             },
             "require": {
@@ -5323,7 +5323,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-12-18T08:03:24+00:00"
+            "time": "2020-12-22T08:36:18+00:00"
         },
         {
             "name": "symfony/dotenv",
@@ -6501,19 +6501,20 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/orm-pack.git",
-                "reference": "46aa731f213140388ee11ff3d2b6776a3b4a0d90"
+                "reference": "357f6362067b1ebb94af321b79f8939fc9118751"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/orm-pack/zipball/46aa731f213140388ee11ff3d2b6776a3b4a0d90",
-                "reference": "46aa731f213140388ee11ff3d2b6776a3b4a0d90",
+                "url": "https://api.github.com/repos/symfony/orm-pack/zipball/357f6362067b1ebb94af321b79f8939fc9118751",
+                "reference": "357f6362067b1ebb94af321b79f8939fc9118751",
                 "shasum": ""
             },
             "require": {
                 "composer/package-versions-deprecated": "*",
                 "doctrine/doctrine-bundle": "*",
                 "doctrine/doctrine-migrations-bundle": "*",
-                "doctrine/orm": "*"
+                "doctrine/orm": "*",
+                "symfony/proxy-manager-bridge": "*"
             },
             "default-branch": true,
             "type": "symfony-pack",
@@ -6524,7 +6525,7 @@
             "description": "A pack for the Doctrine ORM",
             "support": {
                 "issues": "https://github.com/symfony/orm-pack/issues",
-                "source": "https://github.com/symfony/orm-pack/tree/v2.0.0"
+                "source": "https://github.com/symfony/orm-pack/tree/v2.1.0"
             },
             "funding": [
                 {
@@ -6540,7 +6541,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-07-14T14:34:28+00:00"
+            "time": "2020-12-22T16:33:52+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -12203,7 +12204,6 @@
         "ext-bcmath": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
-        "ext-mysqli": "*",
         "ext-pdo": "*"
     },
     "platform-dev": [],
