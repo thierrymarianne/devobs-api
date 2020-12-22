@@ -3,9 +3,19 @@
 function init_virtual_host() {
     cd /etc/apache2 || exit
 
-    if [ ! -e /etc/apache2/sites-available/press-review.conf ];
+    if [ ! -e /var/www/api/var/logs/apache.error.api.log ];
     then
-        ln -s /templates/sites-enabled/press-review.conf /etc/apache2/sites-available
+        touch /var/www/api/var/logs/apache.error.api.log
+    fi
+
+    if [ ! -e /var/www/api/var/logs/apache.access.api.log ];
+    then
+        touch /var/www/api/var/logs/apache.access.api.log
+    fi
+
+    if [ ! -e /etc/apache2/sites-available/devobs.conf ];
+    then
+        ln -s /templates/sites-enabled/devobs.conf /etc/apache2/sites-available
     fi
 
     # Disable default virtual host
@@ -22,12 +32,12 @@ function init_virtual_host() {
     local working_directory
     working_directory="$(pwd)"
 
-    if [ -L "${working_directory}"/sites-enabled/press-review.conf ];
+    if [ -L "${working_directory}"/sites-enabled/devobs.conf ];
     then
-        rm "${working_directory}"/sites-enabled/press-review.conf
+        rm "${working_directory}"/sites-enabled/devobs.conf
     fi
 
-    ln -s "${working_directory}"/sites-available/press-review.conf "${working_directory}"/sites-enabled
+    ln -s "${working_directory}"/sites-available/devobs.conf "${working_directory}"/sites-enabled
 
     if [ -L "${working_directory}"/mods-enabled/deflate.conf ];
     then
