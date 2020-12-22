@@ -69,6 +69,11 @@ class TokenRepository extends ServiceEntityRepository implements TokenRepository
         $consumerKey,
         $consumerSecret
     ): void {
+        $entityManager = $this->getEntityManager();
+        if (!$entityManager->getConnection()->isConnected()) {
+            return;
+        }
+
         if ($this->findOneBy(['oauthToken' => $oauthToken]) !== null) {
             return;
         }
