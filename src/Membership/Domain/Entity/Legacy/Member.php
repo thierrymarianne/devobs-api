@@ -142,7 +142,7 @@ class Member extends MemberModel implements JsonEncodingAwareInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="usr_avatar", type="integer", nullable=true)
+     * @ORM\Column(name="usr_avatar", type="string", nullable=true)
      */
     protected ?string $avatar;
 
