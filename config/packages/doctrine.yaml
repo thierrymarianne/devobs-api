@@ -130,7 +130,7 @@ doctrine:
                 auto_mapping: false
                 connection: default
                 dql: "%doctrine_extensions_dql%"
-                mappings: &mappings_write
+                mappings:
                     Api:
                         alias:      'Api'
                         is_bundle:  false
@@ -179,9 +179,3 @@ doctrine:
                         is_bundle:  false
                         prefix:     App\Twitter\Domain\Publication\Entity
                         type:       annotation
-            write:
-                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
-                connection: write
-                dql: "%doctrine_extensions_dql%"
-                mappings:
-                    <<: *mappings_write
