@@ -222,7 +222,7 @@ services:
             - [ 'setMemberRepository',                          [ '@App\Twitter\Infrastructure\Repository\Membership\MemberRepository' ] ]
             - [ 'setModerator',                                 [ '@App\Twitter\Infrastructure\Api\Moderator\ApiLimitModerator' ] ]
             - [ 'setPublicationBatchCollectedEventRepository',  [ '@App\Twitter\Infrastructure\Curation\Repository\PublicationBatchCollectedEventRepository' ] ]
-            - [ 'setPublishersListRepository',                 [ '@App\Twitter\Infrastructure\Api\Repository\PublishersListRepository' ] ]
+            - [ 'setPublishersListRepository',                  [ '@App\Twitter\Infrastructure\Api\Repository\PublishersListRepository' ] ]
             - [ 'setPublicationPersistence',                    [ '@App\Twitter\Infrastructure\Publication\Persistence\PublicationPersistence' ] ]
             - [ 'setStatusLogger',                              [ '@App\Twitter\Infrastructure\Log\StatusLogger' ] ]
             - [ 'setStatusAccessor',                            [ '@App\Twitter\Infrastructure\Twitter\Api\Accessor\StatusAccessor' ] ]

@@ -214,4 +214,16 @@ trait MemberTrait
     {
         return 0;
     }
+
+    public function setTwitterID(string $twitterId): MemberInterface
+    {
+        $this->twitterID = $twitterId;
+
+        return $this;
+    }
+
+    public function hasTwitterId(): bool
+    {
+        return $this->twitterID === null;
+    }
 }

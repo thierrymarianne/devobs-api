@@ -26,11 +26,6 @@ class Auth0TokenAuthenticator extends TokenAuthenticator
     public Authenticator $authenticator;
 
     /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    public $logger;
-
-    /**
      * @param Request $request
      *
      * @return array|mixed|null

@@ -40,7 +40,7 @@
 
         <one-to-many
             field="aggregates"
-            target-entity="WeavingTheWeb\Bundle\ApiBundle\Entity\Aggregate"
+            target-entity="App\Twitter\Infrastructure\Api\Entity\Aggregate"
             mapped-by="memberAggregateSubscription" />
 
         <field

@@ -4,25 +4,24 @@ declare(strict_types=1);
 namespace App\Twitter\Infrastructure\Publication\Repository;
 
 use App\NewsReview\Domain\Repository\SearchParamsInterface;
+use App\PublishersList\Repository\MemberAggregateSubscriptionRepository;
 use App\PublishersList\Repository\PaginationAwareTrait;
 use App\Conversation\ConversationAwareTrait;
 use App\Twitter\Domain\Publication\Repository\PaginationAwareRepositoryInterface;
+use App\Twitter\Infrastructure\Api\Repository\PublishersListRepository;
 use App\Twitter\Infrastructure\DependencyInjection\LoggerTrait;
 use App\Twitter\Infrastructure\Http\SearchParams;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use InvalidArgumentException;
-use WeavingTheWeb\Bundle\ApiBundle\Repository\AggregateRepository;
 
 class HighlightRepository extends ServiceEntityRepository implements PaginationAwareRepositoryInterface
 {
-    public const TABLE_ALIAS = 'h';
-
     private const SEARCH_PERIOD_DATE_FORMAT = 'Y-m-d';
 
     use PaginationAwareTrait;
@@ -141,11 +140,11 @@ class HighlightRepository extends ServiceEntityRepository implements PaginationA
         ) {
             $queryBuilder->innerJoin(
                 self::TABLE_ALIAS.'.aggregate',
-                AggregateRepository::TABLE_ALIAS
+                PublishersListRepository::TABLE_ALIAS
             );
 
             $queryBuilder->innerJoin(
-                AggregateRepository::TABLE_ALIAS.'.memberAggregateSubscription',
+                PublishersListRepository::TABLE_ALIAS.'.memberAggregateSubscription',
                 MemberAggregateSubscriptionRepository::TABLE_ALIAS,
                 Join::WITH,
                 implode([

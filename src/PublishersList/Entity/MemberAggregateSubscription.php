@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\PublishersList\Entity;
 
 use App\Membership\Domain\Entity\MemberInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ramsey\Uuid\UuidInterface;
 use const JSON_THROW_ON_ERROR;
 
@@ -46,6 +48,8 @@ class MemberAggregateSubscription
         return $this;
     }
 
+    private Collection $aggregates;
+
     /**
      * @param MemberInterface $member
      * @param array           $document
@@ -56,5 +60,6 @@ class MemberAggregateSubscription
         $this->document = json_encode($document, JSON_THROW_ON_ERROR);
         $this->listName = $document['name'];
         $this->listId = $document['id'];
+        $this->aggregates = new ArrayCollection();
     }
 }

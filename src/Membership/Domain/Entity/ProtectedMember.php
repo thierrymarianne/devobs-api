@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Membership\Domain\Entity;
 
+use App\Membership\Domain\Entity\Legacy\Member;
+
 class ProtectedMember implements TwitterMemberInterface
 {
     use MemberTrait;
@@ -33,16 +35,11 @@ class ProtectedMember implements TwitterMemberInterface
         return false;
     }
 
-    /**
-     * @param string $screenName
-     * @param int    $id
-     * @return MemberInterface
-     */
     public function make(string $screenName, int $id): MemberInterface
     {
         $member = new Member();
         $member->setScreenName($screenName);
-        $member->setTwitterID($id);
+        $member->setTwitterID((string) $id);
         $member->setEmail('@'.$screenName);
         $member->setProtected(true);
 

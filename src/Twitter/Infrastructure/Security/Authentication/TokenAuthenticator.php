@@ -25,11 +25,6 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     }
 
     /**
-     * @var LoggerInterface
-     */
-    public $logger;
-
-    /**
      * @param Request $request
      *
      * @return array|mixed|null

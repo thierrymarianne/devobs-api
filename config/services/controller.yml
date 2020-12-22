@@ -54,18 +54,6 @@ services:
             keywordRepository: '@repository.keyword'
             redisCache:        '@app.cache.redis'
 
-    controller.member:
-        public: true
-        class: 'App\Twitter\Infrastructure\Membership\Controller\MemberController'
-        arguments:
-            - '%allowed.origin%'
-            - '%kernel.environment%'
-        calls:
-            - [ 'setLogger',            [ '@logger' ] ]
-            - [ 'setHttpAuthenticator', [ '@App\Twitter\Infrastructure\Security\Authentication\HttpAuthenticator' ] ]
-        properties:
-            memberProfileAccessor:  '@App\Twitter\Infrastructure\Twitter\Api\Accessor\MemberProfileAccessor'
-
     controller.publication:
         public: true
         class: 'App\Twitter\Infrastructure\Publication\Controller\PublicationController'

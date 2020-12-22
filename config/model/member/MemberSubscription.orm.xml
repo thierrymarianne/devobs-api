@@ -22,13 +22,6 @@
             <custom-id-generator class="Ramsey\Uuid\Doctrine\UuidGenerator"/>
         </id>
 
-        <field
-            name="hasBeenCancelled"
-            column="has_been_cancelled"
-            type="boolean"
-            nullable="true"
-        />
-
         <many-to-one
             field="member"
             target-entity="App\Membership\Domain\Entity\Legacy\Member"

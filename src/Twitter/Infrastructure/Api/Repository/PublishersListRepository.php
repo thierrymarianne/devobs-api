@@ -53,7 +53,7 @@ class PublishersListRepository extends ResourceRepository implements CapableOfDe
     use TimelyStatusRepositoryTrait;
     use TokenRepositoryTrait;
 
-    private const TABLE_ALIAS = 'a';
+    public const TABLE_ALIAS = 'a';
 
     private const PREFIX_MEMBER_AGGREGATE = 'user :: ';
 

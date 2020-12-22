@@ -6,6 +6,7 @@ namespace App\Membership\Domain\Entity\Legacy;
 use App\Twitter\Infrastructure\Api\Entity\Token;
 use App\Membership\Domain\Entity\MemberInterface;
 use App\Membership\Domain\Model\Member as MemberModel;
+use App\Twitter\Infrastructure\Serialization\JsonEncodingAwareInterface;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -40,7 +41,7 @@ use const JSON_THROW_ON_ERROR;
  * @ORM\DiscriminatorMap({"1" = "Member"})
  * @package App\Membership\Domain\Entity
  */
-class Member extends MemberModel
+class Member extends MemberModel implements JsonEncodingAwareInterface
 {
     /**
      * @ORM\Column(name="usr_api_key", type="string", nullable=true)
@@ -642,7 +643,7 @@ class Member extends MemberModel
         return $this;
     }
 
-    public function setTotalStatus($totalStatus): self
+    public function setTotalStatus($totalStatus): MemberInterface
     {
         $this->totalStatuses = $totalStatus;
 
@@ -653,14 +654,4 @@ class Member extends MemberModel
     {
         return $this->totalStatuses;
     }
-
-    /**
-     * @var ArrayCollection
-     *
-     * @ORM\OneToMany(
-     *     targetEntity="\App\Analysis\Entity\PublicationFrequency",
-     *     mappedBy="member"
-     * )
-     */
-    private $publicationFrequencies;
 }

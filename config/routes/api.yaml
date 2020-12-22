@@ -46,11 +46,6 @@ logged_in_member_profile:
     defaults: { _controller: controller.logged_in_member::getProfile }
     methods:  [POST, OPTIONS]
 
-refresh_member_profile:
-    path:     '/api/twitter/admin/member/refresh-profile'
-    defaults: { _controller: controller.member::refreshProfile }
-    methods:  [POST, OPTIONS]
-
 remove_aggregate:
     path:     '/api/twitter/admin/aggregate'
     defaults: { _controller: controller.publishers_list::bulkRemoveAggregates }

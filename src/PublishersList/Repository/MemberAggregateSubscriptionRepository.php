@@ -11,7 +11,7 @@ use const JSON_THROW_ON_ERROR;
 
 class MemberAggregateSubscriptionRepository extends EntityRepository
 {
-    const TABLE_ALIAS = 'member_aggregate_subscription';
+    public const TABLE_ALIAS = 'member_aggregate_subscription';
 
     /**
      * @param MemberInterface $member

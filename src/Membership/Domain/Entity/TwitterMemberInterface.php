@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Member;
+namespace App\Membership\Domain\Entity;
 
 interface TwitterMemberInterface extends MemberInterface
 {
