@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 
 /**
- * @ORM\Entity(repositoryClass="App\Twitter\Infrastructure\Api\Repository\PublishersListRepository")
+ * @ORM\Entity
  * @ORM\Table(
  *     name="weaving_aggregate",
  *     options={"collate":"utf8mb4_general_ci", "charset":"utf8mb4"},

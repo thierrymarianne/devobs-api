@@ -7,7 +7,7 @@ use \stdClass;
 
 /**
  * @author  Thierry Marianne <thierry.marianne@weaving-the-web.org>
- * @ORM\Entity(repositoryClass="\App\Twitter\Infrastructure\Api\Repository\WhispererRepository")
+ * @ORM\Entity
  * @ORM\Table(name="weaving_whisperer",
  *  uniqueConstraints={
  *      @ORM\UniqueConstraint(

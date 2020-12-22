@@ -8,8 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Table(name="weaving_token_type")
- * @ORM\Entity()
- * @ORM\Entity(repositoryClass="\App\Twitter\Infrastructure\Api\Repository\TokenTypeRepository")
+ * @ORM\Entity
  */
 class TokenType
 {
