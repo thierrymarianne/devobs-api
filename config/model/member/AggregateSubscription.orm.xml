@@ -19,7 +19,10 @@
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="member_aggregate_subscription_id,subscription_id" name="unique_subscription" />
+            <unique-constraint
+                name="aggregate_subscription_unique"
+                columns="member_aggregate_subscription_id,subscription_id"
+             />
         </unique-constraints>
 
         <id name="id" column="id" type="uuid">

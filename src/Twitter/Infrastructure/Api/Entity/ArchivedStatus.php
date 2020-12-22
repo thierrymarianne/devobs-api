@@ -15,14 +15,14 @@ use Doctrine\ORM\Mapping as ORM;
  *      name="weaving_archived_status",
  *      uniqueConstraints={
  *          @ORM\UniqueConstraint(
- *              name="unique_hash", columns={"ust_hash", "ust_access_token", "ust_full_name"}),
+ *              name="archived_status_unique_hash", columns={"ust_hash", "ust_access_token", "ust_full_name"}),
  *      },
  *      indexes={
  *          @ORM\Index(name="hash", columns={"ust_hash"}),
- *          @ORM\Index(name="screen_name", columns={"ust_full_name"}),
- *          @ORM\Index(name="status_id", columns={"ust_status_id"}),
- *          @ORM\Index(name="ust_created_at", columns={"ust_created_at"}),
- *          @ORM\Index(name="idx_published", columns={"is_published"})
+ *          @ORM\Index(name="archived_status_screen_name", columns={"ust_full_name"}),
+ *          @ORM\Index(name="archived_status_id", columns={"ust_status_id"}),
+ *          @ORM\Index(name="archived_status_created_at", columns={"ust_created_at"}),
+ *          @ORM\Index(name="archived_status_published", columns={"is_published"})
  *      }
  * )
  */

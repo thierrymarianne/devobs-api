@@ -10,7 +10,7 @@
             table="search_matching_status">
 
         <indexes>
-            <index name="status_idx" columns="status_id,publication_date_time,time_range,member_name"/>
+            <index name="search_status_idx" columns="status_id,publication_date_time,time_range,member_name"/>
         </indexes>
 
         <unique-constraints>

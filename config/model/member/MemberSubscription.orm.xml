@@ -14,7 +14,10 @@
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="member_id,subscription_id" name="unique_subscription" />
+            <unique-constraint
+                name="member_subscription_unique"
+                columns="member_id,subscription_id"
+            />
         </unique-constraints>
 
         <id name="id" column="id" type="uuid">

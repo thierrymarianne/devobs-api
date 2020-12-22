@@ -16,12 +16,12 @@ use Doctrine\ORM\Mapping as ORM;
  *      name="weaving_status",
  *      uniqueConstraints={
  *          @ORM\UniqueConstraint(
- *              name="unique_hash", columns={"ust_hash"}),
+ *              name="status_unique_hash", columns={"ust_hash"}),
  *      },
  *      options={"collate":"utf8mb4_general_ci", "charset":"utf8mb4"},
  *      indexes={
  *          @ORM\Index(name="hash", columns={"ust_hash"}),
- *          @ORM\Index(name="screen_name", columns={"ust_full_name"}),
+ *          @ORM\Index(name="status_screen_name", columns={"ust_full_name"}),
  *          @ORM\Index(name="status_id", columns={"ust_status_id"}),
  *          @ORM\Index(name="indexed", columns={"ust_indexed"}),
  *          @ORM\Index(name="ust_created_at", columns={"ust_created_at"}),

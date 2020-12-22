@@ -15,7 +15,7 @@
         </options>
 
         <indexes>
-            <index name="member_aggregate_subscription" columns="id,member_id,list_id,list_name" />
+            <index name="member_aggregate_subscription_idx" columns="id,member_id,list_id,list_name" />
             <index name="mas_id_name" columns="list_name" />
         </indexes>
 
