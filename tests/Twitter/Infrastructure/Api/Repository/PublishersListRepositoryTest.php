@@ -82,9 +82,9 @@ class PublishersListRepositoryTest extends KernelTestCase
                 locked_at,
                 created_at
             ) VALUES (
-                "New York Times",
-                "press review",
-                0,
+                'New York Times',
+                'press review',
+                true,
                 null,
                 NOW()
             )
@@ -211,15 +211,15 @@ QUERY;
     private function tearDownFixtures(): void
     {
         $this->connection->executeQuery(
-            'DELETE FROM weaving_status_aggregate WHERE 1'
+            'DELETE FROM weaving_status_aggregate'
         );
 
         $this->connection->executeQuery(
-            'DELETE FROM timely_status WHERE 1'
+            'DELETE FROM timely_status'
         );
 
         $this->connection->executeQuery(
-            'DELETE FROM weaving_status WHERE 1'
+            'DELETE FROM weaving_status'
         );
     }
 }
