@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Table(name="weaving_token_type")
  * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="\App\Twitter\Infrastructure\Api\Repository\TokenTypeRepository")
  */
 class TokenType
 {
@@ -16,8 +17,9 @@ class TokenType
 
     public const APPLICATION = 'application';
 
-    public function __construct()
+    public function __construct($name)
     {
+        $this->name = $name;
         $this->tokens = new ArrayCollection();
     }
 

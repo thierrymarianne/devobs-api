@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 namespace App\Twitter\Infrastructure\Api\AccessToken\Repository;
 
-use App\Twitter\Infrastructure\Api\Entity\TokenInterface;
+use App\Twitter\Domain\Api\AccessToken\Repository\TokenRepositoryInterface;
+use App\Twitter\Domain\Api\Model\TokenInterface;
 use App\Twitter\Infrastructure\Api\Exception\UnavailableTokenException;
 use App\Twitter\Infrastructure\Database\Connection\ConnectionAwareInterface;
 use App\Twitter\Infrastructure\DependencyInjection\LoggerTrait;
@@ -23,8 +24,6 @@ use App\Twitter\Infrastructure\Api\Entity\Token,
     App\Twitter\Infrastructure\Api\Entity\TokenType;
 
 /**
- * @author Thierry Marianne <thierry.marianne@weaving-the-web.org>
- *
  * @method TokenInterface|null find($id, $lockMode = null, $lockVersion = null)
  * @method TokenInterface|null findOneBy(array $criteria, array $orderBy = null)
  * @method TokenInterface[]    findAll()

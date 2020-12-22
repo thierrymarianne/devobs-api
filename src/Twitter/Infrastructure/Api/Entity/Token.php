@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Twitter\Infrastructure\Api\Entity;
 
+use App\Twitter\Domain\Api\Model\TokenInterface;
 use App\Twitter\Infrastructure\Api\Exception\InvalidSerializedTokenException;
 use App\Membership\Domain\Entity\Legacy\Member;
 use DateTimeInterface;
