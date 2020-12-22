@@ -11,6 +11,8 @@ have been tested under Ubuntu 20.04.
 
 Install git by following instructions from the [official documentation](https://git-scm.org/).
 
+Install mkcert by folllowing instructions from [https://mkcert.dev/](https://mkcert.dev/)
+
 Install Docker by following instructions from the [official documentation](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
 
 Install Docker compose by following instructions from the [official documentation](https://docs.docker.com/compose/install/).
