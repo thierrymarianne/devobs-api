@@ -874,10 +874,8 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
      * @return |null
      * @throws ApiRateLimitingException
      * @throws BadAuthenticationDataException
-     * @throws NonUniqueResultException
      * @throws NotFoundMemberException
      * @throws NotFoundStatusException
-     * @throws OptimisticLockException
      * @throws ProtectedAccountException
      * @throws ReadOnlyApplicationException
      * @throws SuspendedAccountException
