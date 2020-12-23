@@ -7,13 +7,16 @@ use Abraham\TwitterOAuth\TwitterOAuth as TwitterClient;
 use App\Membership\Domain\Entity\AggregateSubscription;
 use App\Membership\Domain\Entity\MemberInterface;
 use App\Membership\Infrastructure\Repository\Exception\InvalidMemberIdentifier;
+use App\Twitter\Domain\Api\AccessToken\Repository\TokenRepositoryInterface;
 use App\Twitter\Domain\Api\ApiAccessorInterface;
+use App\Twitter\Domain\Api\Model\TokenInterface;
+use App\Twitter\Domain\Api\Selector\ListSelectorInterface;
 use App\Twitter\Domain\Api\TwitterErrorAwareInterface;
 use App\Twitter\Domain\Resource\MemberCollection;
 use App\Twitter\Domain\Resource\OwnershipCollection;
-use App\Twitter\Domain\Api\AccessToken\Repository\TokenRepositoryInterface;
+use App\Twitter\Domain\Resource\OwnershipCollectionInterface;
+use App\Twitter\Infrastructure\Api\Entity\FreezableToken;
 use App\Twitter\Infrastructure\Api\Entity\Token;
-use App\Twitter\Domain\Api\Model\TokenInterface;
 use App\Twitter\Infrastructure\Api\Moderator\ApiLimitModerator;
 use App\Twitter\Infrastructure\Exception\BadAuthenticationDataException;
 use App\Twitter\Infrastructure\Exception\EmptyErrorCodeException;
@@ -382,7 +385,7 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
         $token = $this->maybeGetToken($endpoint, $token);
 
         /** Freeze token and wait for 15 minutes before getting back to operation */
-        $this->tokenRepository->freezeToken($token->getOauthToken());
+        $this->tokenRepository->freezeToken($token);
         $this->moderator->waitFor(
             15 * 60,
             ['{{ token }}' => $this->takeFirstTokenCharacters($token)]
@@ -395,20 +398,6 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
      * @param string $memberId
      *
      * @return MemberInterface
-     * @throws ApiRateLimitingException
-     * @throws BadAuthenticationDataException
-     * @throws InconsistentTokenRepository
-     * @throws InvalidMemberIdentifier
-     * @throws NonUniqueResultException
-     * @throws NotFoundMemberException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws ProtectedAccountException
-     * @throws ReadOnlyApplicationException
-     * @throws ReflectionException
-     * @throws SuspendedAccountException
-     * @throws UnavailableResourceException
-     * @throws UnexpectedApiResponseException
      */
     public function ensureMemberHavingIdExists(string $memberId): MemberInterface
     {
@@ -560,11 +549,7 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
         }
     }
 
-    public function getMemberOwnerships(
-        string $screenName,
-        int $cursor = -1,
-        int $count = 800
-    ): OwnershipCollection {
+    public function getMemberOwnerships(ListSelectorInterface $selector): OwnershipCollectionInterface {
         $endpoint = $this->getUserOwnershipsEndpoint();
         $this->guardAgainstApiLimit($endpoint);
 
@@ -572,10 +557,10 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
             strtr(
                 $endpoint,
                 [
-                    '{{ screenName }}' => $screenName,
+                    '{{ screenName }}' => $selector->screenName(),
                     '{{ reverse }}'    => true,
-                    '{{ count }}'      => $count,
-                    '{{ cursor }}'     => $cursor,
+                    '{{ count }}'      => self::MAX_OWNERSHIPS,
+                    '{{ cursor }}'     => $selector->cursor(),
                 ]
             )
         );
@@ -771,8 +756,6 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
      *
      * @return Token|null
      * @throws ApiRateLimitingException
-     * @throws InconsistentTokenRepository
-     * @throws OptimisticLockException
      */
     public function guardAgainstApiLimit(
         string $endpoint,
@@ -911,7 +894,7 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
         }
 
         $token = $this->maybeGetToken($endpoint);
-        $this->tokenRepository->freezeToken($token->getOauthToken());
+        $this->tokenRepository->freezeToken($token);
 
         if (
             strpos($endpoint, '/statuses/user_timeline') === false
@@ -1112,18 +1095,13 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
      *
      * @return Token|null
      * @throws ApiRateLimitingException
-     * @throws InconsistentTokenRepository
-     * @throws OptimisticLockException
      */
-    public function preEndpointContact(string $endpoint): ?Token
+    public function preEndpointContact(string $endpoint): ?TokenInterface
     {
         $tokens = $this->getTokens();
 
         /** @var Token $token */
-        $token = $this->tokenRepository->refreshFreezeCondition(
-            $tokens['oauth'],
-            $this->logger
-        );
+        $token = $this->tokenRepository->findByUserToken($tokens['oauth']);
 
         if (!$token->isFrozen()) {
             return $token;
@@ -1880,8 +1858,9 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
                     break;
 
                 default:
+
                     $this->logger->error($exception->getMessage());
-                    $this->tokenRepository->freezeToken($this->userToken);
+                    $this->tokenRepository->freezeToken(FreezableToken::fromUserToken($this->userToken));
             }
         }
 
@@ -2229,20 +2208,9 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
         return $suspendedMessageMessage;
     }
 
-    /**
-     * @param string     $endpoint
-     * @param Token|null $token
-     *
-     * @return Token
-     * @throws ApiRateLimitingException
-     * @throws InconsistentTokenRepository
-     * @throws NonUniqueResultException
-     * @throws OptimisticLockException
-     * @throws Exception
-     */
-    private function maybeGetToken(string $endpoint, Token $token = null): Token
+    private function maybeGetToken(string $endpoint, TokenInterface $token = null): TokenInterface
     {
-        if ($token !== null) {
+        if ($token instanceof TokenInterface) {
             return $token;
         }
 

@@ -180,35 +180,18 @@ class Token implements TokenInterface
         return $this;
     }
 
-    /**
-     * Get createdAt
-     *
-     * @return DateTime
-     */
     public function getCreatedAt()
     {
         return $this->createdAt;
     }
 
-    /**
-     * Set updatedAt
-     *
-     * @param DateTime $updatedAt
-     *
-     * @return Token
-     */
-    public function setUpdatedAt($updatedAt)
+    public function setUpdatedAt(DateTimeInterface $updatedAt)
     {
         $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
-    /**
-     * Get updatedAt
-     *
-     * @return DateTime
-     */
     public function getUpdatedAt()
     {
         return $this->updatedAt;
@@ -252,7 +235,7 @@ class Token implements TokenInterface
      *
      * @return $this
      */
-    private function setFrozenUntil(DateTimeInterface $frozenUntil): self
+    protected function setFrozenUntil(DateTimeInterface $frozenUntil): self
     {
         $this->frozenUntil = $frozenUntil;
 
@@ -372,6 +355,7 @@ class Token implements TokenInterface
         return substr($this->getOAuthToken(), 0, 8);
     }
 
+    /** The token is frozen when the "frozen until" date is in the future */
     public function freeze(): TokenInterface
     {
         return $this->setFrozenUntil($this->nextFreezeEndsAt());

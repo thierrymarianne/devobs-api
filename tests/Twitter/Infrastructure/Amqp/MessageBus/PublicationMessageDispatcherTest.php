@@ -10,7 +10,9 @@ use App\Twitter\Domain\Curation\PublicationStrategyInterface;
 use App\Twitter\Domain\Resource\MemberOwnerships;
 use App\Twitter\Domain\Resource\OwnershipCollection;
 use App\Twitter\Infrastructure\Amqp\MessageBus\PublicationMessageDispatcher;
+use App\Twitter\Infrastructure\Operation\Correlation\CorrelationId;
 use App\Twitter\Infrastructure\Twitter\Api\Accessor\OwnershipAccessor;
+use App\Twitter\Infrastructure\Twitter\Api\Selector\AuthenticatedSelector;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -34,9 +36,10 @@ class PublicationMessageDispatcherTest extends KernelTestCase
 
         $calls = 0;
 
+        /** @var OwnershipAccessor $ownershipAccessor */
         $ownershipAccessor = $this->prophesize(OwnershipAccessor::class);
         $ownershipAccessor->getOwnershipsForMemberHavingScreenNameAndToken(
-            Argument::any(),
+            Argument::type(AuthenticatedSelector::class),
             Argument::cetera()
         )->will(function () use (&$calls) {
             if ($calls === 0) {
@@ -66,14 +69,15 @@ class PublicationMessageDispatcherTest extends KernelTestCase
             PublicationStrategy::class
         );
 
-        /** @var PublicationStrategyInterface $publicationStrategy */
+        /** @var PublicationStrategyInterface|PublicationStrategy $publicationStrategy */
         $publicationStrategy->onBehalfOfWhom()->willReturn('test_member');
         $publicationStrategy->noListRestriction()->willReturn(true);
         $publicationStrategy->shouldFetchPublicationsFromCursor()->willReturn(-1);
+        $publicationStrategy->correlationId()->willReturn(CorrelationId::generate());
 
         $dispatcher->dispatchPublicationMessages(
             $publicationStrategy->reveal(),
-            (new Token()),
+            (new Token())->unfreeze(),
             function ($message) {}
         );
 

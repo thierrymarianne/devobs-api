@@ -190,24 +190,6 @@ function consume_fetch_publication_messages {
     /bin/bash -c "sleep ${minimum_execution_time}"
 }
 
-function purge_queues() {
-    local rabbitmq_vhost
-    rabbitmq_vhost="$(cat <(cat .env.local | grep STATUS=amqp | sed -E 's#.+(/.+)/[^/]*$#\1#' | sed -E 's/\/%2f/\//g'))"
-    cd provisioning/containers || exit
-
-    local project_name
-    project_name="$(get_project_name)"
-
-    /bin/bash -c "docker-compose --project-name=${project_name} exec -d messenger rabbitmqctl purge_queue publications -p ${rabbitmq_vhost}"
-    /bin/bash -c "docker-compose --project-name=${project_name} exec -d messenger rabbitmqctl purge_queue failures -p ${rabbitmq_vhost}"
-}
-
-function stop_workers() {
-    cd provisioning/containers || exit
-
-    docker-compose run --rm worker bin/console messenger:stop-workers
-}
-
 function execute_command () {
     local output_log="${1}"
     local error_log="${2}"
@@ -624,11 +606,42 @@ function set_up_amqp_queues() {
 
 function list_amqp_queues() {
     local rabbitmq_vhost
-    rabbitmq_vhost="$(cat <(cat .env.local | grep PUBLICATIONS=amqp | sed -E 's#.+(/.+)/[^/]*$#\1#' | sed -E 's/\/%2f/\//g'))"
+    rabbitmq_vhost="$(get_rabbitmq_virtual_host)"
+
     cd provisioning/containers || exit
 
     local project_name
     project_name="$(get_project_name)"
 
     /bin/bash -c "docker-compose --project-name=${project_name} exec messenger watch -n1 'rabbitmqctl list_queues -p ${rabbitmq_vhost}'"
+}
+
+
+function get_rabbitmq_virtual_host() {
+    local virtual_host
+    virtual_host="$(cat <(cat .env.local | grep PUBLICATIONS=amqp | sed -E 's#.+(/.+)/[^/]*$#\1#' | sed -E 's/\/%2f/\//g'))"
+
+    echo "${virtual_host}"
+}
+
+function purge_queues() {
+    local rabbitmq_vhost
+    rabbitmq_vhost="$(get_rabbitmq_virtual_host)"
+
+    cd provisioning/containers || exit
+
+    local project_name
+    project_name="$(get_project_name)"
+
+    /bin/bash -c "docker-compose --project-name=${project_name} exec -d messenger rabbitmqctl purge_queue publications -p ${rabbitmq_vhost}"
+    /bin/bash -c "docker-compose --project-name=${project_name} exec -d messenger rabbitmqctl purge_queue failures -p ${rabbitmq_vhost}"
+}
+
+function stop_workers() {
+    cd provisioning/containers || exit
+
+    local project_name
+    project_name="$(get_project_name)"
+
+    /bin/bash -c "docker-compose --project-name=${project_name} run --rm worker bin/console messenger:stop-workers"
 }

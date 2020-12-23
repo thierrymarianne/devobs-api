@@ -9,6 +9,7 @@ use App\Twitter\Domain\Resource\MemberIdentity;
 use App\Twitter\Domain\Resource\PublishersList;
 use App\Twitter\Infrastructure\DependencyInjection\Collection\OwnershipBatchCollectedEventRepositoryTrait;
 use App\Twitter\Infrastructure\DependencyInjection\Collection\PublishersListCollectedEventRepositoryTrait;
+use App\Twitter\Infrastructure\Operation\Correlation\CorrelationId;
 use App\Twitter\Infrastructure\Repository\Membership\MemberRepository;
 use App\Membership\Domain\Entity\AggregateSubscription;
 use App\Membership\Infrastructure\Repository\AggregateSubscriptionRepository;
@@ -18,6 +19,7 @@ use App\Twitter\Domain\Api\ApiAccessorInterface;
 use App\Twitter\Infrastructure\Exception\NotFoundMemberException;
 use App\Twitter\Infrastructure\Exception\ProtectedAccountException;
 use App\Twitter\Infrastructure\Exception\SuspendedAccountException;
+use App\Twitter\Infrastructure\Twitter\Api\Selector\MemberOwnershipsBatchSelector;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Psr\Log\LoggerInterface;
@@ -78,16 +80,19 @@ class ImportMemberPublishersListsCommand extends AbstractCommand
         $memberName = $this->input->getOption(self::OPTION_MEMBER_NAME);
         $member     = $this->accessor->ensureMemberHavingNameExists($memberName);
 
+        $correlationId = CorrelationId::generate();
+
         $nextPage = -1;
 
         do {
             $eventRepository   = $this->ownershipBatchCollectedEventRepository;
             $listSubscriptions = $eventRepository->collectedOwnershipBatch(
                 $this->accessor,
-                [
-                    $eventRepository::OPTION_SCREEN_NAME => $member->getTwitterUsername(),
-                    $eventRepository::OPTION_NEXT_PAGE   => $nextPage
-                ]
+                new MemberOwnershipsBatchSelector(
+                    $member->getTwitterUsername(),
+                    (string) $nextPage,
+                    $correlationId
+                )
             );
 
             $this->traverseSubscriptions($listSubscriptions->toArray(), $member);

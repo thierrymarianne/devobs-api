@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Twitter\Infrastructure\Twitter\Collector;
 
+use App\Twitter\Infrastructure\Api\Entity\FreezableToken;
 use App\Twitter\Infrastructure\Twitter\Api\Accessor\Exception\ApiRateLimitingException;
 use App\Twitter\Infrastructure\Twitter\Api\Accessor\Exception\NotFoundStatusException;
 use App\Twitter\Infrastructure\Twitter\Api\Accessor\Exception\ReadOnlyApplicationException;
@@ -366,7 +367,7 @@ class PublicationCollector implements PublicationCollectorInterface
             if ($exception->getCode() === $this->apiAccessor->getEmptyReplyErrorCode()) {
                 $availableApi = true;
             } else {
-                $this->tokenRepository->freezeToken($this->apiAccessor->userToken);
+                $this->tokenRepository->freezeToken(FreezableToken::fromUserToken($this->apiAccessor->userToken));
             }
         }
 
@@ -400,10 +401,7 @@ class PublicationCollector implements PublicationCollectorInterface
     {
         $availableApi = false;
 
-        $token = $this->tokenRepository->refreshFreezeCondition(
-            $this->apiAccessor->userToken,
-            $this->logger
-        );
+        $token = $this->tokenRepository->findByUserToken($this->apiAccessor->userToken);
 
         if ($token->isNotFrozen()) {
             $availableApi = $this->isApiAvailable();

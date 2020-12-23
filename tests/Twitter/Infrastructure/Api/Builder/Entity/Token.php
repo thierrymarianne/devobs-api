@@ -12,6 +12,8 @@ class Token extends BaseToken
 {
     public function nextFreezeEndsAt(): DateTimeInterface
     {
+        $this->setFrozenUntil(new \DateTimeImmutable('now'));
+
         return (new DateTimeImmutable(
             'now',
             new \DateTimeZone('UTC')

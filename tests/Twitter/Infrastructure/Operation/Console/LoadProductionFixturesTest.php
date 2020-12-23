@@ -18,14 +18,8 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 class LoadProductionFixturesTest extends KernelTestCase
 {
-    /**
-     * @var Command
-     */
     private Command $command;
 
-    /**
-     * @var CommandTester
-     */
     private CommandTester $commandTester;
 
     private EntityManagerInterface $entityManager;
