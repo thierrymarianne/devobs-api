@@ -616,7 +616,6 @@ function list_amqp_queues() {
     /bin/bash -c "docker-compose --project-name=${project_name} exec messenger watch -n1 'rabbitmqctl list_queues -p ${rabbitmq_vhost}'"
 }
 
-
 function get_rabbitmq_virtual_host() {
     local virtual_host
     virtual_host="$(cat <(cat .env.local | grep PUBLICATIONS=amqp | sed -E 's#.+(/.+)/[^/]*$#\1#' | sed -E 's/\/%2f/\//g'))"
