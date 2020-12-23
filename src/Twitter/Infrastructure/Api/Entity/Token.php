@@ -6,10 +6,14 @@ namespace App\Twitter\Infrastructure\Api\Entity;
 use App\Twitter\Domain\Api\Model\TokenInterface;
 use App\Twitter\Infrastructure\Api\Exception\InvalidSerializedTokenException;
 use App\Membership\Domain\Entity\Legacy\Member;
+use DateTime;
+use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use function array_key_exists;
 
 /**
@@ -135,11 +139,6 @@ class Token implements TokenInterface
     protected Collection $users;
 
     /**
-     * @var boolean
-     */
-    protected ?bool $frozen;
-
-    /**
      * @return integer
      */
     public function getId()
@@ -170,7 +169,7 @@ class Token implements TokenInterface
     /**
      * Set createdAt
      *
-     * @param \DateTime $createdAt
+     * @param DateTime $createdAt
      *
      * @return Token
      */
@@ -184,7 +183,7 @@ class Token implements TokenInterface
     /**
      * Get createdAt
      *
-     * @return \DateTime
+     * @return DateTime
      */
     public function getCreatedAt()
     {
@@ -194,7 +193,7 @@ class Token implements TokenInterface
     /**
      * Set updatedAt
      *
-     * @param \DateTime $updatedAt
+     * @param DateTime $updatedAt
      *
      * @return Token
      */
@@ -208,7 +207,7 @@ class Token implements TokenInterface
     /**
      * Get updatedAt
      *
-     * @return \DateTime
+     * @return DateTime
      */
     public function getUpdatedAt()
     {
@@ -253,7 +252,7 @@ class Token implements TokenInterface
      *
      * @return $this
      */
-    public function setFrozenUntil(DateTimeInterface $frozenUntil): self
+    private function setFrozenUntil(DateTimeInterface $frozenUntil): self
     {
         $this->frozenUntil = $frozenUntil;
 
@@ -294,27 +293,20 @@ class Token implements TokenInterface
     }
 
     /**
-     * @param $frozen
-     *
-     * @return $this
-     */
-    public function setFrozen($frozen)
-    {
-        $this->frozen = $frozen;
-
-        return $this;
-    }
-
-    /**
      * @return bool
+     * @throws Exception
      */
     public function isFrozen(): bool
     {
-        return $this->frozen;
+        return $this->getFrozenUntil() !== null &&
+            $this->getFrozenUntil()->getTimestamp() >
+                (new DateTime('now', new DateTimeZone('UTC')))
+                    ->getTimestamp();
     }
 
     /**
      * @return bool
+     * @throws Exception
      */
     public function isNotFrozen(): bool
     {
@@ -378,5 +370,28 @@ class Token implements TokenInterface
     public function firstIdentifierCharacters(): string
     {
         return substr($this->getOAuthToken(), 0, 8);
+    }
+
+    public function freeze(): TokenInterface
+    {
+        return $this->setFrozenUntil($this->nextFreezeEndsAt());
+    }
+
+    public function unfreeze(): TokenInterface
+    {
+        return $this->setFrozenUntil(
+            new DateTimeImmutable(
+                'now - 15min',
+                new DateTimeZone('UTC')
+            )
+        );
+    }
+
+    public function nextFreezeEndsAt(): DateTimeInterface
+    {
+        return new DateTimeImmutable(
+            'now + 15min',
+            new DateTimeZone('UTC')
+        );
     }
 }

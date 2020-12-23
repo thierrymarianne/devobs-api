@@ -57,7 +57,7 @@ class TokenRepository extends ServiceEntityRepository implements TokenRepository
 
         // Ensure the newly created token is not frozen yet
         // equivalent to setting the frozen until date in the past
-        $token->setFrozenUntil(new DateTime('now - 15min'));
+        $token->unfreeze();
 
         return $token;
     }
@@ -87,11 +87,11 @@ class TokenRepository extends ServiceEntityRepository implements TokenRepository
      * @param string $until
      * @throws Exception
      */
-    public function freezeToken($oauthToken, $until = 'now + 15min'): void
+    public function freezeToken($oauthToken, $until = TokenInterface::DATE_FROZEN_UNTIL): void
     {
         /** @var Token $token */
         $token = $this->findOneBy(['oauthToken' => $oauthToken]);
-        $token->setFrozenUntil(new DateTime($until));
+        $token->freeze();
 
         $this->save($token);
     }
@@ -121,15 +121,13 @@ class TokenRepository extends ServiceEntityRepository implements TokenRepository
             /**
              * The token is frozen if the "frozen until" date is in the future
              */
-            $frozen = true;
+            $token->freeze();
         }
         /**
          *  else {
          *      The token was frozen but not anymore as "frozen until" date is now in the past
          *  }
          */
-
-        $token->setFrozen($frozen);
 
         return $token;
     }
