@@ -62,4 +62,4 @@ create-test-database: ## Create test database
 		@/bin/bash -c 'source ./bin/console.sh && create_test_database'
 
 load-production-fixtures: ## Load production fixtures
-		@/bin/bash -c 'source ./bin/console.sh && load_production_fixtures'
+		@/bin/bash -c 'source ./.env.local && source ./bin/console.sh && load_production_fixtures'

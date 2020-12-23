@@ -616,7 +616,12 @@ function create_test_database() {
 
 function load_production_fixtures() {
   local script
-  script='php bin/console devobs:load-production-fixtures -vvvv'
+  script="php bin/console devobs:load-production-fixtures \
+    ${API_TWITTER_USER_TOKEN} \
+    ${API_TWITTER_USER_SECRET} \
+    ${API_TWITTER_CONSUMER_KEY} \
+    ${API_TWITTER_CONSUMER_SECRET} \
+    -vvvv"
 
   run_php_script "${script}" 'interactive_mode'
 }

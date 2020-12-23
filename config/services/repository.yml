@@ -129,6 +129,9 @@ services:
         calls:
             - [ 'setLogger', [ '@logger' ] ]
 
+    App\Twitter\Infrastructure\Api\AccessToken\Repository\TokenRepository:
+        '@repository.access_token'
+
     repository.publishers_list_subscription:
         class:      'App\Membership\Infrastructure\Repository\AggregateSubscriptionRepository'
         arguments:
