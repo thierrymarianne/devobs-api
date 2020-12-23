@@ -31,8 +31,6 @@ class PublicationStrategy implements PublicationStrategyInterface
 
     private bool $includeOwner = false;
 
-    private bool $fetchLikes = false;
-
     private int $cursor = -1;
 
     /**
@@ -268,18 +266,6 @@ class PublicationStrategy implements PublicationStrategyInterface
     public function willCollectPublicationsPreceding(?string $date): PublicationStrategyInterface
     {
         $this->dateBeforeWhichPublicationsAreCollected = $date;
-
-        return $this;
-    }
-
-    /**
-     * @param bool $fetchLikes
-     *
-     * @return PublicationStrategyInterface
-     */
-    public function willFetchLikes(bool $fetchLikes = false): PublicationStrategyInterface
-    {
-        $this->fetchLikes = $fetchLikes;
 
         return $this;
     }

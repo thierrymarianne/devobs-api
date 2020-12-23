@@ -101,7 +101,6 @@ services:
             - '@Doctrine\Common\Persistence\ManagerRegistry'
             - 'App\Twitter\Infrastructure\Api\Entity\Aggregate'
         calls:
-            - [ 'setLikedStatusRepository',     [ '@repository.liked_status' ] ]
             - [ 'setLogger',                    [ '@logger' ] ]
             - [ 'setPublishersListDispatcher', [ '@App\Twitter\Infrastructure\Amqp\MessageBus\PublishersListDispatcher' ] ]
             - [ 'setStatusRepository',          [ '@App\Twitter\Infrastructure\Api\Repository\StatusRepository' ] ]
@@ -218,15 +217,6 @@ services:
             memberRepository:             "@user_manager"
             memberSubscribeeRepository:   "@repository.member_subscribee"
             memberSubscriptionRepository: "@repository.member_subscription"
-
-    repository.liked_status:
-        class: 'App\Twitter\Infrastructure\Publication\Repository\LikedStatusRepository'
-        arguments:
-            - '@Doctrine\Common\Persistence\ManagerRegistry'
-            - 'App\Twitter\Domain\Curation\Entity\LikedStatus'
-        properties:
-            memberRepository: "@user_manager"
-            statusRepository: '@App\Twitter\Infrastructure\Api\Repository\StatusRepository'
 
     repository.member_subscription:
         class: 'App\Membership\Infrastructure\Repository\MemberSubscriptionRepository'

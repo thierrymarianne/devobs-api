@@ -160,8 +160,8 @@ class ImportMemberPublishersListsCommand extends AbstractCommand
                 $memberPublishersList = $eventRepository->collectedPublishersList(
                     $this->accessor,
                     [
-                        $eventRepository::OPTION_publishers_list_ID => $memberAggregateSubscription->listId(),
-                        $eventRepository::OPTION_publishers_list_NAME => $memberAggregateSubscription->listName()
+                        $eventRepository::OPTION_PUBLISHERS_LIST_ID => $memberAggregateSubscription->listId(),
+                        $eventRepository::OPTION_PUBLISHERS_LIST_NAME => $memberAggregateSubscription->listName()
                     ]
                 );
 

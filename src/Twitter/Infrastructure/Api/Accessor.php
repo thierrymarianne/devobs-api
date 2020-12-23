@@ -9,7 +9,6 @@ use App\Membership\Domain\Entity\MemberInterface;
 use App\Membership\Infrastructure\Repository\Exception\InvalidMemberIdentifier;
 use App\Twitter\Domain\Api\ApiAccessorInterface;
 use App\Twitter\Domain\Api\TwitterErrorAwareInterface;
-use App\Twitter\Domain\Curation\LikedStatusCollectionAwareInterface;
 use App\Twitter\Domain\Resource\MemberCollection;
 use App\Twitter\Domain\Resource\OwnershipCollection;
 use App\Twitter\Domain\Api\AccessToken\Repository\TokenRepositoryInterface;
@@ -59,9 +58,7 @@ use const PHP_URL_USER;
 /**
  * @author Thierry Marianne <thierry.marianne@weaving-the-web.org>
  */
-class Accessor implements ApiAccessorInterface,
-    TwitterErrorAwareInterface,
-    LikedStatusCollectionAwareInterface
+class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
 {
     public const ERROR_PROTECTED_ACCOUNT = 2048;
 
@@ -442,32 +439,7 @@ class Accessor implements ApiAccessorInterface,
     }
 
     /**
-     * @param array $parameters
-     *
-     * @return stdClass|array
-     * @throws ApiRateLimitingException
-     * @throws BadAuthenticationDataException
-     * @throws InconsistentTokenRepository
-     * @throws NonUniqueResultException
-     * @throws NotFoundMemberException
-     * @throws NotFoundStatusException
-     * @throws OptimisticLockException
-     * @throws ProtectedAccountException
-     * @throws ReadOnlyApplicationException
-     * @throws ReflectionException
-     * @throws SuspendedAccountException
-     * @throws UnavailableResourceException
-     * @throws UnexpectedApiResponseException
-     */
-    public function fetchLikes(array $parameters)
-    {
-        $endpoint = $this->getLikesEndpoint() . '&' . implode('&', $parameters);
-
-        return $this->contactEndpoint($endpoint);
-    }
-
-    /**
-     * @return \API|mixed|object|stdClass
+     * @return mixed|object|stdClass
      * @throws SuspendedAccountException
      * @throws UnavailableResourceException
      * @throws OptimisticLockException
@@ -501,10 +473,6 @@ class Accessor implements ApiAccessorInterface,
     public function fetchStatuses(array $options): array
     {
         $parameters = $this->validateRequestOptions((object) $options);
-
-        if ($this->isAboutToCollectLikesFromCriteria($options)) {
-            return $this->fetchLikes($parameters);
-        }
 
         return $this->fetchTimelineStatuses($parameters);
     }

@@ -69,8 +69,8 @@ class PublishersListProcessor implements PublishersListProcessorInterface
             $memberCollection = $eventRepository->collectedPublishersList(
                 $this->accessor,
                 [
-                    $eventRepository::OPTION_publishers_list_ID => $list->id(),
-                    $eventRepository::OPTION_publishers_list_NAME => $list->name()
+                    $eventRepository::OPTION_PUBLISHERS_LIST_ID => $list->id(),
+                    $eventRepository::OPTION_PUBLISHERS_LIST_NAME => $list->name()
                 ]
             );
             $memberCollection = $this->addOwnerToListOptionally(
