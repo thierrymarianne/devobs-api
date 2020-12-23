@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Twitter\Infrastructure\Api;
 
 use Abraham\TwitterOAuth\TwitterOAuth as TwitterClient;
+use Abraham\TwitterOAuth\TwitterOAuthException;
 use App\Membership\Domain\Entity\AggregateSubscription;
 use App\Membership\Domain\Entity\MemberInterface;
 use App\Membership\Infrastructure\Repository\Exception\InvalidMemberIdentifier;
@@ -345,6 +346,14 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
             $content = $this->connectToEndpoint($endpoint);
             $this->checkApiLimit();
         } catch (Exception $exception) {
+            // Retry in case of operation timed out error raised by curl
+            if ($exception instanceof TwitterOAuthException &&
+                $exception->getCode() === CURLE_OPERATION_TIMEDOUT
+            ) {
+                $this->logger->info('Retrying to reach endpoint after operation timed out');
+                return $this->contactEndpointUsingConsumerKey($endpoint, $token);
+            }
+
             $content = $this->handleResponseContentWithEmptyErrorCode($exception, $token);
         }
 
