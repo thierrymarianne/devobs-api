@@ -63,8 +63,6 @@ use const PHP_URL_USER;
  */
 class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
 {
-    public const ERROR_PROTECTED_ACCOUNT = 2048;
-
     private const TWITTER_API_VERSION_1_1 = '1.1';
 
     private const MAX_RETRIES = 5;
@@ -532,8 +530,6 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
             return $this->contactEndpoint(strtr($listMembersEndpoint, ['{{ id }}' => $id]));
         };
 
-        $members = [];
-
         try {
             $members = $sendRequest();
         } catch (UnavailableResourceException $exception) {
@@ -545,7 +541,7 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
 
             $members = $sendRequest();
         } finally {
-            return MemberCollection::fromArray($members->users);
+            return MemberCollection::fromArray($members->users ?? []);
         }
     }
 
