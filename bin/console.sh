@@ -625,3 +625,10 @@ function load_production_fixtures() {
 
   run_php_script "${script}" 'interactive_mode'
 }
+
+function set_up_amqp_queues() {
+  local script
+  script='php bin/console messenger:setup-transports -vvvv'
+
+  run_php_script "${script}" 'interactive_mode'
+}
