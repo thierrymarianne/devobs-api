@@ -264,7 +264,6 @@ class PublicationMessageDispatcher implements PublicationMessageDispatcherInterf
             return $this->findNextBatchOfListOwnerships($ownerships);
         }
 
-        // Change tokens
         if ($this->targetListHasNotBeenFound($ownerships, $listRestriction)) {
             $ownerships = $this->guardAgainstInvalidToken(
                 $ownerships,
