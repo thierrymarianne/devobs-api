@@ -263,17 +263,6 @@ function remove_exited_containers() {
     /bin/bash -c "docker ps -a | grep Exited | awk ""'"'{print $1}'"'"" | xargs docker rm -f >> /dev/null 2>&1"
 }
 
-function list_amqp_queues() {
-    local rabbitmq_vhost
-    rabbitmq_vhost="$(cat <(cat .env.local | grep STATUS=amqp | sed -E 's#.+(/.+)/[^/]*$#\1#' | sed -E 's/\/%2f/\//g'))"
-    cd provisioning/containers || exit
-
-    local project_name
-    project_name="$(get_project_name)"
-
-    /bin/bash -c "docker-compose --project-name=${project_name} exec messenger watch -n1 'rabbitmqctl list_queues -p ${rabbitmq_vhost}'"
-}
-
 function run_php_script() {
     local script
     script="${1}"
@@ -631,4 +620,15 @@ function set_up_amqp_queues() {
   script='php bin/console messenger:setup-transports -vvvv'
 
   run_php_script "${script}" 'interactive_mode'
+}
+
+function list_amqp_queues() {
+    local rabbitmq_vhost
+    rabbitmq_vhost="$(cat <(cat .env.local | grep PUBLICATIONS=amqp | sed -E 's#.+(/.+)/[^/]*$#\1#' | sed -E 's/\/%2f/\//g'))"
+    cd provisioning/containers || exit
+
+    local project_name
+    project_name="$(get_project_name)"
+
+    /bin/bash -c "docker-compose --project-name=${project_name} exec messenger watch -n1 'rabbitmqctl list_queues -p ${rabbitmq_vhost}'"
 }
