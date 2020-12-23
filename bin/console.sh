@@ -525,7 +525,7 @@ function dispatch_fetch_publications_messages {
     fi
 
     local arguments
-    arguments="${priority_option}"'--screen_name='"${username}"' '"${list_option}"' '"${query_restriction}"
+    arguments="${priority_option}""${username}"' '"${list_option}"' '"${query_restriction}"
     arguments="${arguments}${cursor_argument}"
     run_command 'bin/console devobs:dispatch-messages-to-fetch-member-statuses '"${arguments}"
 }
