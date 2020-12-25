@@ -172,7 +172,7 @@ class ArchivedStatusRepository extends ResourceRepository implements
         $queryBuilder->select('s.statusId')
                      ->andWhere('s.screenName = :screenName')
                      ->andWhere('s.apiDocument is not null')
-                     ->orderBy('CAST(s.statusId as int)', $direction)
+                     ->orderBy('CAST(s.statusId as bigint)', $direction)
                      ->setMaxResults(1);
 
         $queryBuilder->setParameter('screenName', $screenName);
