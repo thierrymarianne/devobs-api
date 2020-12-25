@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "965fd9b30eca441c4477161cdd21c214",
+    "content-hash": "f0ac2e7210bc607b01ed4f3e1b917ceb",
     "packages": [
         {
             "name": "abraham/twitteroauth",
@@ -3383,16 +3383,16 @@
         },
         {
             "name": "oro/doctrine-extensions",
-            "version": "1.3.1",
+            "version": "dev-cast-support-for-bigint",
             "source": {
                 "type": "git",
-                "url": "https://github.com/oroinc/doctrine-extensions.git",
-                "reference": "3dd513580393ba8a1040c2095e2949ce549cb038"
+                "url": "https://github.com/thierrymarianne/contrib-doctrine-extensions.git",
+                "reference": "8ea17b389c55f30d7560f2caf66733dcb20c03b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/oroinc/doctrine-extensions/zipball/3dd513580393ba8a1040c2095e2949ce549cb038",
-                "reference": "3dd513580393ba8a1040c2095e2949ce549cb038",
+                "url": "https://api.github.com/repos/thierrymarianne/contrib-doctrine-extensions/zipball/8ea17b389c55f30d7560f2caf66733dcb20c03b5",
+                "reference": "8ea17b389c55f30d7560f2caf66733dcb20c03b5",
                 "shasum": ""
             },
             "require": {
@@ -3414,7 +3414,6 @@
                     "Oro\\ORM": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -3436,10 +3435,9 @@
                 "type"
             ],
             "support": {
-                "issues": "https://github.com/oroinc/doctrine-extensions/issues",
-                "source": "https://github.com/oroinc/doctrine-extensions/tree/1.3.1"
+                "source": "https://github.com/thierrymarianne/contrib-doctrine-extensions/tree/cast-support-for-bigint"
             },
-            "time": "2020-12-17T16:22:54+00:00"
+            "time": "2020-12-25T16:59:49+00:00"
         },
         {
             "name": "predis/predis",
@@ -8124,12 +8122,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/service-contracts.git",
-                "reference": "0aeee2f70f4550e6c48c9a796d98f5ceda58dfda"
+                "reference": "5c448a39281b671be2cc8d208e6df75ac2d4b366"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/0aeee2f70f4550e6c48c9a796d98f5ceda58dfda",
-                "reference": "0aeee2f70f4550e6c48c9a796d98f5ceda58dfda",
+                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/5c448a39281b671be2cc8d208e6df75ac2d4b366",
+                "reference": "5c448a39281b671be2cc8d208e6df75ac2d4b366",
                 "shasum": ""
             },
             "require": {
@@ -8197,7 +8195,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-10-14T17:08:19+00:00"
+            "time": "2020-12-23T15:38:30+00:00"
         },
         {
             "name": "symfony/stopwatch",
@@ -12240,6 +12238,7 @@
         "abraham/twitteroauth": 20,
         "fabpot/goutte": 20,
         "fzaninotto/faker": 20,
+        "oro/doctrine-extensions": 20,
         "predis/predis": 20,
         "ramsey/uuid-doctrine": 20,
         "symfony/orm-pack": 20,
@@ -12251,7 +12250,7 @@
         "symfony/maker-bundle": 20,
         "symfony/test-pack": 20
     },
-    "prefer-stable": true,
+    "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": ">=7.2.9",
