@@ -72,7 +72,7 @@ class PublishersListRepository extends ResourceRepository implements CapableOfDe
             ]
         );
 
-        if (!($aggregate instanceof Aggregate)) {
+        if (!($aggregate instanceof PublishersList)) {
             $aggregate = $this->make($member->getTwitterUsername(), $list->name);
         }
 
@@ -154,7 +154,7 @@ class PublishersListRepository extends ResourceRepository implements CapableOfDe
                 if ($aggregate['totalStatuses'] === 0) {
                     /** @var PublishersListInterface $existingAggregate */
                     $existingAggregate = $this->findOneBy(['id' => $aggregate['id']]);
-                    if (!($existingAggregate instanceof Aggregate)) {
+                    if (!($existingAggregate instanceof PublishersList)) {
                         return $aggregate;
                     }
                 }
@@ -551,7 +551,7 @@ QUERY;
             ]
         );
 
-        if ($aggregate instanceof Aggregate) {
+        if ($aggregate instanceof PublishersList) {
             $aggregates = $this->findBy(
                 [
                     'screenName' => $screenName,
