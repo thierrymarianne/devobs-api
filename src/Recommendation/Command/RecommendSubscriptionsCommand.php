@@ -120,7 +120,7 @@ class RecommendSubscriptionsCommand extends Command implements CommandReturnCode
     {
         $allSubscriptions = $this->entityManager->getConnection()->executeQuery('
             SELECT GROUP_CONCAT(distinct subscription_id) all_subscription_ids FROM member_subscription
-        ')->fetchAll()[0]['all_subscription_ids'];
+        ')->fetchAllAssociative()[0]['all_subscription_ids'];
 
         $allSubscriptions = explode(',', $allSubscriptions);
         $allSubscriptions = array_map(
@@ -164,7 +164,7 @@ QUERY;
         $statement = $this->entityManager->getConnection()->executeQuery(
             str_replace(':member_name', $this->input->getOption(self::OPTION_REFERENCE_MEMBER), $query)
         );
-        $results = $statement->fetchAll();
+        $results = $statement->fetchAllAssociative();
 
         if (!array_key_exists(0, $results)) {
             throw new \LogicException('There should be subscriptions for the reference member');
@@ -216,7 +216,7 @@ QUERY;
                     ]
                 )
             );
-        $results = $statement->fetchAll();
+        $results = $statement->fetchAllAssociative();
 
         $memberVectors = array_map(function ($record) {
             return $this->reduceMemberVector($record['subscription_ids']);

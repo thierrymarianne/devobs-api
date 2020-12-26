@@ -45,12 +45,12 @@ class PublishersListRepositoryTest extends KernelTestCase
 
         self::assertEquals($expectedTotalStatusPostUpdate, $result['totalStatuses']);
 
-        $statement = $this->connection->query('
+        $statement = $this->connection->executeQuery('
             SELECT total_statuses AS total_status
             FROM publishers_list    
             WHERE id = '.$publishersListId.'
         ');
-        $result = $statement->fetch();
+        $result = $statement->fetchAssociative();
 
         self::assertEquals($expectedTotalStatusPostUpdate, $result['total_status']);
     }
@@ -91,7 +91,7 @@ class PublishersListRepositoryTest extends KernelTestCase
 QUERY;
         $this->connection->executeQuery($insertPublishersList);
 
-        $statement = $this->connection->query(
+        $statement = $this->connection->executeQuery(
             '
             SELECT id as publication_id
             FROM publishers_list
@@ -106,13 +106,13 @@ QUERY;
     {
         $this->publishStatus();
 
-        $statement = $this->connection->query(
+        $statement = $this->connection->executeQuery(
             '
             SELECT ust_id as status_id
             FROM weaving_status
         '
         );
-        $results   = $statement->fetchAll();
+        $results   = $statement->fetchAllAssociative();
 
         $publishersListId = $this->preparePublishersList();
 
