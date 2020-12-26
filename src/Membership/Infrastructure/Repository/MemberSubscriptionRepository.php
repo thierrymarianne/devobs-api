@@ -114,7 +114,7 @@ QUERY;
     public function findMissingSubscriptions(MemberInterface $member, array $subscriptions)
     {
         $query = <<< QUERY
-            SELECT GROUP_CONCAT(sm.usr_twitter_id) subscription_ids
+            SELECT array_agg(sm.usr_twitter_id) subscription_ids
             FROM member_subscription s,
             weaving_user sm
             WHERE sm.usr_id = s.subscription_id
@@ -250,7 +250,7 @@ QUERY
               COALESCE(a.id, 0),
               CONCAT(
                 '{',
-                GROUP_CONCAT(
+                array_agg(
                   CONCAT('"', a.id, '": "', a.name, '"') ORDER BY a.name DESC SEPARATOR ","
                 ), 
                 '}'
@@ -411,7 +411,7 @@ QUERY
             <<<QUERY
                 SELECT CONCAT(
                     '{',
-                    GROUP_CONCAT(
+                    array_agg(
                         DISTINCT CONCAT(
                             '"',
                             select_.id, 

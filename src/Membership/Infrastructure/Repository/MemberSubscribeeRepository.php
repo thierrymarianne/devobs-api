@@ -59,7 +59,7 @@ class MemberSubscribeeRepository extends ServiceEntityRepository
     public function findMissingSubscribees(MemberInterface $member, array $subscribees)
     {
         $query = <<< QUERY
-            SELECT GROUP_CONCAT(sm.usr_twitter_id) subscribee_ids
+            SELECT array_agg(sm.usr_twitter_id) subscribee_ids
             FROM member_subscribee s,
             weaving_user sm
             WHERE sm.usr_id = s.subscribee_id
