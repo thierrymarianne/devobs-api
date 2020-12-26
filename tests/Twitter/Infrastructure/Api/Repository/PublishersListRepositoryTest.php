@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException as DBALExceptionAlias;
 use Doctrine\DBAL\ParameterType;
 use Faker\Factory;
+use Ramsey\Uuid\Rfc4122\UuidV5;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
@@ -78,18 +79,23 @@ class PublishersListRepositoryTest extends KernelTestCase
             INSERT INTO publishers_list (
                 screen_name,
                 name,
+                public_id,
                 locked,
                 locked_at,
                 created_at
             ) VALUES (
                 'New York Times',
                 'press review',
+                ?,
                 true,
                 null,
                 NOW()
             )
 QUERY;
-        $this->connection->executeQuery($insertPublishersList);
+        $this->connection->executeQuery(
+            $insertPublishersList,
+            [UuidV5::uuid5('c2670e5e-f575-4ea7-acb3-cce1367b51e4', 'press review')]
+        );
 
         $statement = $this->connection->executeQuery(
             '
