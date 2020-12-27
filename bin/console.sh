@@ -405,6 +405,8 @@ function get_environment_option() {
 }
 
 function before_running_command() {
+    remove_exited_containers
+
     export XDEBUG_CONFIG="idekey='phpstorm-xdebug'"
 
     if [ -z "${PROJECT_DIR}" ];
