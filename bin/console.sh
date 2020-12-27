@@ -405,8 +405,6 @@ function get_environment_option() {
 }
 
 function before_running_command() {
-    make remove-php-container
-
     export XDEBUG_CONFIG="idekey='phpstorm-xdebug'"
 
     if [ -z "${PROJECT_DIR}" ];
