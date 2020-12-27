@@ -297,7 +297,7 @@ function run_php_script() {
     project_name="$(get_project_name)"
 
     local container_name
-    container_name="$(echo "${script}" | sha256sum | awk '{print $1}')"
+    container_name="$(echo "${project_name}-${script}" | sha256sum | awk '{print $1}')"
 
     local command
 
