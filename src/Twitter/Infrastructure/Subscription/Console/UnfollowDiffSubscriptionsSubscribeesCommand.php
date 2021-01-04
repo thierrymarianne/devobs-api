@@ -110,7 +110,7 @@ class UnfollowDiffSubscriptionsSubscribeesCommand extends AbstractCommand
 
         $this->mutator->unfollowMembers($memberCollection, $subscriber);
 
-        return self::RETURN_STATUS_SUCCESS;
+        return self::SUCCESS;
     }
 
     private function pluckSubscriptionIds(array $subscriptions): array

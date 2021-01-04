@@ -69,7 +69,7 @@ class AuthorizeApplicationCommandTest extends KernelTestCase
         $this->commandTester->execute(['command' => $this->testedCommand::COMMAND_NAME]);
 
         self::assertEquals(
-            $this->testedCommand::RETURN_STATUS_SUCCESS,
+            $this->testedCommand::SUCCESS,
             $this->commandTester->getStatusCode(),
             'The command should exit successfully.'
         );
