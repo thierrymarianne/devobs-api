@@ -39,3 +39,8 @@ services:
     App\Twitter\Infrastructure\Api\Security\Authorization\AuthorizeAccess:
         factory: ['App\Tests\Twitter\Infrastructure\Api\Security\Authorization\Builder\AuthorizeAccessBuilder', 'build']
 
+    test.App\Twitter\Infrastructure\Subscription\Console\ListSubscriptionsToPublishersListsCommand:
+        '@App\Twitter\Infrastructure\Subscription\Console\ListSubscriptionsToPublishersListsCommand'
+
+    test.App\Twitter\Domain\Curation\Repository\OwnershipBatchCollectedEventRepositoryInterface:
+        '@App\Twitter\Domain\Curation\Repository\OwnershipBatchCollectedEventRepositoryInterface'

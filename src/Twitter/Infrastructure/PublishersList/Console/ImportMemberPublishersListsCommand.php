@@ -24,6 +24,7 @@ use App\Twitter\Infrastructure\Api\Selector\MemberOwnershipsBatchSelector;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -33,7 +34,7 @@ class ImportMemberPublishersListsCommand extends AbstractCommand
     use OwnershipBatchCollectedEventRepositoryTrait;
     use PublishersListCollectedEventRepositoryTrait;
 
-    private const OPTION_MEMBER_NAME = 'member-name';
+    private const ARGUMENT_SCREEN_NAME = 'screen_name';
 
     private const OPTION_LIST_RESTRICTION = 'list-restriction';
 
@@ -53,12 +54,11 @@ class ImportMemberPublishersListsCommand extends AbstractCommand
 
     protected function configure(): void
     {
-        $this->setName('import-aggregates')
-             ->addOption(
-                 self::OPTION_MEMBER_NAME,
-                 'm',
-                 InputOption::VALUE_REQUIRED,
-                 'The name of a member'
+        $this->setName('devobs:import-publishers-lists')
+             ->addArgument(
+                 self::ARGUMENT_SCREEN_NAME,
+                 InputArgument::REQUIRED,
+                 'The screen name of a Twitter member'
              )
              ->addOption(
                  self::OPTION_LIST_RESTRICTION,
@@ -78,7 +78,7 @@ class ImportMemberPublishersListsCommand extends AbstractCommand
     {
         parent::execute($input, $output);
 
-        $memberName = $this->input->getOption(self::OPTION_MEMBER_NAME);
+        $memberName = $this->input->getArgument(self::ARGUMENT_SCREEN_NAME);
         $member     = $this->accessor->ensureMemberHavingNameExists($memberName);
 
         $correlationId = CorrelationId::generate();

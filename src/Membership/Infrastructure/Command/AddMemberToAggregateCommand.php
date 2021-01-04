@@ -2,19 +2,22 @@
 
 namespace App\Membership\Infrastructure\Command;
 
+use App\Membership\Domain\Model\MemberInterface;
+use App\Membership\Infrastructure\Entity\AggregateSubscription;
+use App\Membership\Infrastructure\Repository\AggregateSubscriptionRepository;
+use App\Twitter\Infrastructure\Api\Accessor;
 use App\Twitter\Infrastructure\Api\Accessor\Exception\ApiRateLimitingException;
 use App\Twitter\Infrastructure\Api\Accessor\Exception\NotFoundStatusException;
 use App\Twitter\Infrastructure\Api\Accessor\Exception\ReadOnlyApplicationException;
 use App\Twitter\Infrastructure\Api\Accessor\Exception\UnexpectedApiResponseException;
-use App\Membership\Infrastructure\Entity\AggregateSubscription;
-use App\Membership\Domain\Model\MemberInterface;
-use App\Membership\Infrastructure\Repository\AggregateSubscriptionRepository;
+use App\Twitter\Infrastructure\Api\Repository\PublishersListRepository;
 use App\Twitter\Infrastructure\Exception\BadAuthenticationDataException;
 use App\Twitter\Infrastructure\Exception\InconsistentTokenRepository;
 use App\Twitter\Infrastructure\Exception\NotFoundMemberException;
 use App\Twitter\Infrastructure\Exception\ProtectedAccountException;
 use App\Twitter\Infrastructure\Exception\SuspendedAccountException;
 use App\Twitter\Infrastructure\Exception\UnavailableResourceException;
+use App\Twitter\Infrastructure\Membership\Repository\MemberRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
@@ -24,9 +27,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use App\Twitter\Infrastructure\Api\Repository\PublishersListRepository;
-use App\Twitter\Infrastructure\Api\Accessor;
-use App\Twitter\Infrastructure\Membership\Repository\MemberRepository;
 
 class AddMemberToAggregateCommand extends Command
 {

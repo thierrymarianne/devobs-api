@@ -93,6 +93,9 @@ services:
         tags:
             - { name: 'doctrine.repository_service' }
 
+    App\Twitter\Domain\Curation\Repository\OwnershipBatchCollectedEventRepositoryInterface:
+        '@App\Twitter\Infrastructure\Curation\Repository\OwnershipBatchCollectedEventRepository'
+
     App\Twitter\Infrastructure\Api\Repository\PublishersListRepository:
         public: true
         class:  'App\Twitter\Infrastructure\Api\Repository\PublishersListRepository'
