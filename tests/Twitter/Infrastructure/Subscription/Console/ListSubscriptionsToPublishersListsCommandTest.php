@@ -44,7 +44,7 @@ class ListSubscriptionsToPublishersListsCommandTest extends KernelTestCase
 
         $this->commandTester = new CommandTester($command);
 
-        $this->removeExistingFixtures();
+        $this->removeFixtures();
     }
 
     /**
@@ -93,12 +93,12 @@ class ListSubscriptionsToPublishersListsCommandTest extends KernelTestCase
 
     protected function tearDown(): void
     {
-        $this->removeExistingFixtures();
+        $this->removeFixtures();
 
         parent::tearDown();
     }
 
-    private function removeExistingFixtures(): void
+    private function removeFixtures(): void
     {
         $this->entityManager->getConnection()->executeQuery('
             DELETE FROM ownership_batch_collected_event;

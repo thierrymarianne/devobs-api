@@ -38,3 +38,19 @@ services:
             - '@logger'
         tags:
             - { name: 'console.command' }
+
+    App\Twitter\Infrastructure\PublishersList\Console\ImportMemberPublishersListsCommand:
+        class: 'App\Twitter\Infrastructure\PublishersList\Console\ImportMemberPublishersListsCommand'
+        arguments:
+            - !php/const App\Twitter\Infrastructure\PublishersList\Console\ImportMemberPublishersListsCommand::COMMAND_NAME
+            - '@App\Twitter\Domain\Api\Accessor\ApiAccessorInterface'
+            - '@App\Membership\Domain\Repository\PublishersListSubscriptionRepositoryInterface'
+            - '@App\Twitter\Infrastructure\PublishersList\Repository\MemberAggregateSubscriptionRepository'
+            - '@App\Membership\Domain\Repository\NetworkRepositoryInterface'
+            - '@user_manager'
+            - '@logger'
+        calls:
+            - [ 'setOwnershipBatchCollectedEventRepository',  [ '@App\Twitter\Infrastructure\Curation\Repository\OwnershipBatchCollectedEventRepository' ] ]
+            - [ 'setPublishersListCollectedEventRepository', [ '@App\Twitter\Infrastructure\Curation\Repository\PublishersListCollectedEventRepository' ] ]
+        tags:
+            - { name: 'console.command' }

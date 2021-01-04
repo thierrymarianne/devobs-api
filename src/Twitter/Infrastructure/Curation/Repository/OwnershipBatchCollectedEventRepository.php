@@ -15,7 +15,6 @@ use App\Twitter\Infrastructure\DependencyInjection\LoggerTrait;
 use App\Twitter\Infrastructure\Operation\Correlation\CorrelationId;
 use Assert\Assert;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Ramsey\Uuid\Uuid;
 use Throwable;
 use const JSON_THROW_ON_ERROR;
 
