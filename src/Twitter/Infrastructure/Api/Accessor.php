@@ -8,6 +8,7 @@ use Abraham\TwitterOAuth\TwitterOAuthException;
 use App\Membership\Infrastructure\Entity\AggregateSubscription;
 use App\Membership\Domain\Model\MemberInterface;
 use App\Membership\Infrastructure\Repository\Exception\InvalidMemberIdentifier;
+use App\Twitter\Domain\Api\Accessor\TwitterApiEndpointsAwareInterface;
 use App\Twitter\Domain\Api\AccessToken\Repository\TokenRepositoryInterface;
 use App\Twitter\Domain\Api\Accessor\ApiAccessorInterface;
 use App\Twitter\Domain\Api\Model\TokenInterface;
@@ -63,10 +64,8 @@ use const PHP_URL_USER;
 /**
  * @author Thierry Marianne <thierry.marianne@weaving-the-web.org>
  */
-class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
+class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface, TwitterApiEndpointsAwareInterface
 {
-    private const TWITTER_API_VERSION_1_1 = '1.1';
-
     private const MAX_RETRIES = 5;
 
     private const BASE_URL = 'https://api.twitter.com/1.1/';
@@ -739,7 +738,12 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
                 $unfrozenToken = $token !== null;
 
                 while ($apiLimitReached && $unfrozenToken) {
-                    $apiLimitReached = !$this->isApiAvailableForToken($endpoint, $token);
+                    try {
+                        $apiLimitReached = !$this->isApiAvailableForToken($endpoint, $token);
+                    } catch (ApiRateLimitingException $e) {
+                        $this->logger->info($e->getMessage(), ['exception' => $e]);
+                    }
+
                     $token           = $this->tokenRepository->findFirstUnfrozenToken();
                     $unfrozenToken   = $token !== null;
                 }
@@ -1626,7 +1630,7 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
      */
     protected function getRateLimitStatusEndpoint($version = '1.1'): string
     {
-        return $this->getApiBaseUrl($version) . '/application/rate_limit_status.json?' .
+        return $this->getApiBaseUrl($version) . self::API_ENDPOINT_RATE_LIMIT_STATUS. '.json?' .
             'resources=favorites,statuses,users,lists,friends,friendships,followers';
     }
 
@@ -1984,11 +1988,17 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
      * @return stdClass|array
      * @throws ApiRateLimitingException
      * @throws BadAuthenticationDataException
+     * @throws InconsistentTokenRepository
+     * @throws NonUniqueResultException
      * @throws NotFoundMemberException
      * @throws NotFoundStatusException
+     * @throws OptimisticLockException
      * @throws ProtectedAccountException
      * @throws ReadOnlyApplicationException
+     * @throws ReflectionException
      * @throws SuspendedAccountException
+     * @throws UnavailableResourceException
+     * @throws UnexpectedApiResponseException
      * @throws UnknownApiAccessException
      */
     private function fetchContentWithRetries(
@@ -2019,8 +2029,6 @@ class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface
                 );
 
                 break;
-            } catch (ApiRateLimitingException $exception) {
-                $content = $fetchContent($endpoint);
             } catch (OverCapacityException $exception) {
                 $this->logger->info(
                     sprintf(
