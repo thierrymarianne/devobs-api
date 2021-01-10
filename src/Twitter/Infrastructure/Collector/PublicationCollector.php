@@ -49,6 +49,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Exception;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use ReflectionException;
 use stdClass;
@@ -578,17 +579,15 @@ class PublicationCollector implements PublicationCollectorInterface
     /**
      * @param array  $statuses
      * @param bool   $shouldDeclareMaximumStatusId
-     * @param string $memberName
      *
      * @return MemberInterface
      */
     private function declareExtremumIdForMember(
         array $statuses,
-        bool $shouldDeclareMaximumStatusId,
-        string $memberName
+        bool $shouldDeclareMaximumStatusId
     ): MemberInterface {
-        if (count($statuses) === 0) {
-            throw new \LogicException(
+        if (empty($statuses)) {
+            throw new LogicException(
                 'There should be at least one status'
             );
         }
@@ -696,8 +695,7 @@ class PublicationCollector implements PublicationCollectorInterface
         try {
             $this->declareExtremumIdForMember(
                 $statuses,
-                $shouldDeclareMaximumStatusId,
-                $memberName
+                $shouldDeclareMaximumStatusId
             );
         } catch (NotFoundMemberException $exception) {
             $this->apiAccessor->ensureMemberHavingNameExists($exception->screenName);
@@ -705,15 +703,13 @@ class PublicationCollector implements PublicationCollectorInterface
             try {
                 $this->declareExtremumIdForMember(
                     $statuses,
-                    $shouldDeclareMaximumStatusId,
-                    $memberName
+                    $shouldDeclareMaximumStatusId
                 );
             } catch (NotFoundMemberException $exception) {
                 $this->apiAccessor->ensureMemberHavingNameExists($exception->screenName);
                 $this->declareExtremumIdForMember(
                     $statuses,
-                    $shouldDeclareMaximumStatusId,
-                    $memberName
+                    $shouldDeclareMaximumStatusId
                 );
             }
         }

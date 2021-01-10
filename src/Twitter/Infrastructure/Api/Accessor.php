@@ -62,7 +62,7 @@ use const PHP_URL_USER;
 /**
  * @author Thierry Marianne <thierry.marianne@weaving-the-web.org>
  */
-class Accessor implements ApiAccessorInterface, TwitterErrorAwareInterface, TwitterApiEndpointsAwareInterface
+class Accessor implements ApiAccessorInterface, TwitterApiEndpointsAwareInterface
 {
     private const MAX_RETRIES = 5;
 

@@ -6,9 +6,10 @@ namespace App\Twitter\Domain\Api\Accessor;
 use App\Membership\Domain\Model\MemberInterface;
 use App\Twitter\Domain\Api\Model\TokenInterface;
 use App\Twitter\Domain\Api\Resource\MemberCollectionInterface;
+use App\Twitter\Domain\Api\TwitterErrorAwareInterface;
 use stdClass;
 
-interface ApiAccessorInterface
+interface ApiAccessorInterface extends TwitterErrorAwareInterface
 {
     public function ensureMemberHavingNameExists(string $memberName): MemberInterface;
 
