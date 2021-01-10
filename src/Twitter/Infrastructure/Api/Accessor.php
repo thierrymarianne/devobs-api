@@ -349,7 +349,7 @@ class Accessor implements ApiAccessorInterface, TwitterApiEndpointsAwareInterfac
      */
     public function delayUnknownExceptionHandlingOnEndpointForToken(
         string $endpoint,
-        Token $token = null
+        TokenInterface $token = null
     ) {
         if ($this->shouldRaiseExceptionOnApiLimit) {
             throw new UnexpectedApiResponseException(
@@ -359,7 +359,10 @@ class Accessor implements ApiAccessorInterface, TwitterApiEndpointsAwareInterfac
 
         $token = $this->maybeGetToken($endpoint, $token);
 
-        /** Freeze token and wait for 15 minutes before getting back to operation */
+        /**
+         * Freeze token and wait for 15 minutes,
+         * before getting back to operation
+         */
         $this->tokenRepository->freezeToken($token);
         $this->moderator->waitFor(
             15 * 60,
@@ -632,6 +635,11 @@ class Accessor implements ApiAccessorInterface, TwitterApiEndpointsAwareInterfac
         return $this;
     }
 
+    public function accessToken(): string
+    {
+        return $this->userToken;
+    }
+
     public function getAccessToken(): string
     {
         return $this->userToken;
@@ -763,19 +771,20 @@ class Accessor implements ApiAccessorInterface, TwitterApiEndpointsAwareInterfac
     }
 
     /**
-     * @param string                       $endpoint
-     * @param UnavailableResourceException $exception
-     * @param callable                     $fetchContent
-     *
-     * @return |null
      * @throws ApiRateLimitingException
      * @throws BadAuthenticationDataException
+     * @throws InconsistentTokenRepository
+     * @throws NonUniqueResultException
      * @throws NotFoundMemberException
      * @throws NotFoundStatusException
+     * @throws OptimisticLockException
      * @throws ProtectedAccountException
      * @throws ReadOnlyApplicationException
+     * @throws ReflectionException
      * @throws SuspendedAccountException
      * @throws UnavailableResourceException
+     * @throws UnexpectedApiResponseException
+     * @throws UnknownApiAccessException
      */
     public function handleTwitterErrorExceptionForToken(
         string $endpoint,
@@ -1124,6 +1133,11 @@ class Accessor implements ApiAccessorInterface, TwitterApiEndpointsAwareInterfac
         $this->consumerKey = $consumerKey;
 
         return $this;
+    }
+
+    public function consumerKey(): string
+    {
+        return $this->consumerKey;
     }
 
     /**
@@ -1704,7 +1718,7 @@ class Accessor implements ApiAccessorInterface, TwitterApiEndpointsAwareInterfac
      *
      * @return bool
      */
-    protected function isApiAvailable($endpoint)
+    protected function isApiAvailable($endpoint): bool
     {
         $availableApi = false;
 
@@ -1736,7 +1750,12 @@ class Accessor implements ApiAccessorInterface, TwitterApiEndpointsAwareInterfac
                 default:
 
                     $this->logger->error($exception->getMessage());
-                    $this->tokenRepository->freezeToken(FreezableToken::fromAccessToken($this->userToken));
+                    $this->tokenRepository->freezeToken(
+                        FreezableToken::fromAccessToken(
+                            $this->accessToken(),
+                            $this->consumerKey()
+                        )
+                    );
             }
         }
 
@@ -1753,12 +1772,7 @@ class Accessor implements ApiAccessorInterface, TwitterApiEndpointsAwareInterfac
         return $this->isApiAvailable($endpoint);
     }
 
-    /**
-     * @param Token $token
-     *
-     * @return string
-     */
-    protected function takeFirstTokenCharacters(Token $token): string
+    protected function takeFirstTokenCharacters(TokenInterface $token): string
     {
         return substr($token->getAccessToken(), 0, 8);
     }

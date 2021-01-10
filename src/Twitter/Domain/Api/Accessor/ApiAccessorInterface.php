@@ -22,11 +22,15 @@ interface ApiAccessorInterface extends TwitterErrorAwareInterface
 
     public function setAccessToken(string $token): ApiAccessorInterface;
 
+    public function accessToken(): string;
+
     public function setAccessTokenSecret(string $tokenSecret): ApiAccessorInterface;
 
     public function fromToken(TokenInterface $token): void;
 
     public function setConsumerKey(string $secret): self;
+
+    public function consumerKey(): string;
 
     public function setConsumerSecret(string $secret): self;
 

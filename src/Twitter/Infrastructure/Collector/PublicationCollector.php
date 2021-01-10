@@ -350,7 +350,7 @@ class PublicationCollector implements PublicationCollectorInterface
     /**
      * @return bool
      */
-    protected function isApiAvailable()
+    protected function isApiAvailable(): bool
     {
         $availableApi = false;
 
@@ -369,21 +369,19 @@ class PublicationCollector implements PublicationCollectorInterface
             if ($exception->getCode() === $this->apiAccessor->getEmptyReplyErrorCode()) {
                 $availableApi = true;
             } else {
-                $this->tokenRepository->freezeToken(FreezableToken::fromAccessToken($this->apiAccessor->userToken));
+                $this->tokenRepository->freezeToken(
+                    FreezableToken::fromAccessToken(
+                        $this->apiAccessor->accessToken(),
+                        $this->apiAccessor->consumerKey()
+                    )
+                );
             }
         }
 
         return $availableApi;
     }
 
-    /**
-     * @param Token $token
-     *
-     * @return bool
-     * @throws OptimisticLockException
-     * @throws Exception
-     */
-    protected function isApiAvailableForToken(Token $token)
+    protected function isApiAvailableForToken(TokenInterface $token): bool
     {
         $this->setupAccessor(
             [
@@ -396,8 +394,7 @@ class PublicationCollector implements PublicationCollectorInterface
     }
 
     /**
-     * @return bool
-     * @throws OptimisticLockException
+     * @throws Exception
      */
     protected function isTwitterApiAvailable(): bool
     {
@@ -422,7 +419,10 @@ class PublicationCollector implements PublicationCollectorInterface
             $oauthToken = $token->getAccessToken();
 
             $availableApi = $this->isApiAvailableForToken($token);
-            while (!$availableApi && ($token = $this->tokenRepository->findFirstUnfrozenToken()) !== null) {
+            while (
+                !$availableApi &&
+                ($token = $this->tokenRepository->findFirstUnfrozenToken()) instanceof TokenInterface
+            ) {
                 $availableApi = $this->isApiAvailableForToken($token);
                 if (!$availableApi) {
                     $timeout = min(abs($timeout), abs($token->getFrozenUntil()->getTimestamp() - $now->getTimestamp()));
@@ -446,7 +446,7 @@ class PublicationCollector implements PublicationCollectorInterface
             return $this->interruptibleCollectDecider->delayingConsumption();
         }
 
-        return $availableApi;
+        return true;
     }
 
     protected function remainingItemsToCollect(array $options): bool
@@ -517,8 +517,15 @@ class PublicationCollector implements PublicationCollectorInterface
         CollectionStrategyInterface $collectionStrategy
     ): ?int {
         $options  = $this->declareOptionsToCollectStatuses($options);
-        $statuses = $this->publicationBatchCollectedEventRepository
-            ->collectedPublicationBatch($collectionStrategy, $options);
+
+        try {
+            $statuses = $this->publicationBatchCollectedEventRepository
+                ->collectedPublicationBatch($collectionStrategy, $options);
+        } catch (ApiRateLimitingException $e) {
+            if ($this->isTwitterApiAvailable()) {
+                return $this->saveStatusesMatchingCriteria($options, $collectionStrategy);
+            }
+        }
 
         if ($statuses instanceof stdClass && isset($statuses->error)) {
             throw new ProtectedAccountException(
